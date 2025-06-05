@@ -65,10 +65,15 @@ def main():
     
     # --- 6. Get a Specific Trace ---
     trace_name_capacitor_voltage = "V(N002)"
-    
-    if trace_name_capacitor_voltage in raw_data.get_trace_names():
-        print(f"\nGetting trace: {trace_name_capacitor_voltage}")
-        v_cap = raw_data.get_trace(trace_name_capacitor_voltage)
+
+    available_traces = raw_data.get_trace_names()
+    trace_name_lower = trace_name_capacitor_voltage.lower()
+    available_traces_lower = [name.lower() for name in available_traces]
+
+    if trace_name_lower in available_traces_lower:
+        actual_trace_name = available_traces[available_traces_lower.index(trace_name_lower)]
+        print(f"\nGetting trace: {actual_trace_name}")
+        v_cap = raw_data.get_trace(actual_trace_name)
         time_trace = raw_data.get_trace("time")
     
         print(f"\nData for {trace_name_capacitor_voltage}:")
@@ -77,8 +82,10 @@ def main():
         for i in range(min(10, len(time_trace.get_wave()))):
             print(f"{time_trace.get_wave()[i]:<15.6e} | {v_cap.get_wave()[i]:<15.6e}")
     else:
-        print(f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file.")
-        print("Available traces:", raw_data.get_trace_names())
+        print(
+            f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file."
+        )
+        print("Available traces:", available_traces)
     
     print("\nBasic PyLTspice example finished.")
 
