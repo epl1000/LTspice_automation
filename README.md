@@ -1,2 +1,34 @@
 # LTspice_automation
-Playing with the Pyltspice python library
+
+This repository contains a small example using the [PyLTSpice](https://pypi.org/project/PyLTSpice/) library to automate LTspice simulations.
+
+## Prerequisites
+
+- [LTspice](https://www.analog.com/en/design-center/design-tools-and-calculators/ltspice-simulator.html) must be installed and available on your system.
+- Install the Python package `PyLTSpice`:
+
+```bash
+pip install PyLTSpice
+```
+
+## Running the example
+
+The `pyltspicetest1.py` script creates a simple RC circuit netlist, runs LTspice, and prints a few data points from the simulation results. Execute it with Python:
+
+```bash
+python pyltspicetest1.py
+```
+
+Upon completion, the script generates:
+
+- `simple_rc.net` – the generated netlist file
+- `temp_sim_output/` – directory containing the `.raw` and `.log` simulation output files
+
+## Cleaning up
+
+To remove the generated files after running the example, delete the netlist and output directory:
+
+```bash
+rm simple_rc.net
+rm -r temp_sim_output
+```
