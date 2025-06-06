@@ -56,9 +56,15 @@ def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=
         if callable(save_fn):
             save_fn()
         else:
+            # ``save_netlist`` has changed signatures across PyLTSpice
+            # versions.  Prefer calling it without arguments first and,
+            # if that fails, retry passing the current netlist file name.
             save_netlist_fn = getattr(netlist_editor_obj, "save_netlist", None)
             if callable(save_netlist_fn):
-                save_netlist_fn()
+                try:
+                    save_netlist_fn()
+                except TypeError:
+                    save_netlist_fn(netlist_file_name)
         print("SpiceEditor initialized.")
     except Exception as e:
         print(f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}")
