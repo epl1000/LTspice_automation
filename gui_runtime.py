@@ -19,14 +19,14 @@ def main():
     except tk.TclError:
         root.geometry("400x600")
 
+    controls = tk.Frame(root)
+    controls.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
+
     figure = plt.Figure(figsize=(5, 4), dpi=100)
     ax = figure.add_subplot(111)
     canvas = FigureCanvasTkAgg(figure, master=root)
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill=tk.BOTH, expand=True)
-
-    controls = tk.Frame(root)
-    controls.pack(padx=10, pady=10)
 
     freq_var = tk.DoubleVar(value=1000)
     tk.Label(controls, text="Frequency (Hz)").grid(row=0, column=0, sticky="e")
@@ -35,22 +35,22 @@ def main():
     freq_spin.grid(row=0, column=1, sticky="w")
 
     res_var = tk.DoubleVar(value=1000)
-    tk.Label(controls, text="Resistor (Ohm)").grid(row=1, column=0, sticky="e")
+    tk.Label(controls, text="Resistor (Ohm)").grid(row=0, column=2, sticky="e")
     res_spin = tk.Spinbox(controls, from_=100, to=10000, increment=100,
                           textvariable=res_var, width=10)
-    res_spin.grid(row=1, column=1, sticky="w")
+    res_spin.grid(row=0, column=3, sticky="w")
 
     cap_var = tk.DoubleVar(value=1.0)
-    tk.Label(controls, text="Capacitor (uF)").grid(row=2, column=0, sticky="e")
+    tk.Label(controls, text="Capacitor (uF)").grid(row=1, column=0, sticky="e")
     cap_spin = tk.Spinbox(controls, from_=0.1, to=10.0, increment=0.1,
                           textvariable=cap_var, width=10)
-    cap_spin.grid(row=2, column=1, sticky="w")
+    cap_spin.grid(row=1, column=1, sticky="w")
 
     time_var = tk.DoubleVar(value=5.0)
-    tk.Label(controls, text="Stop Time (ms)").grid(row=3, column=0, sticky="e")
+    tk.Label(controls, text="Stop Time (ms)").grid(row=1, column=2, sticky="e")
     time_spin = tk.Spinbox(controls, from_=1.0, to=100.0, increment=1.0,
                            textvariable=time_var, width=10)
-    time_spin.grid(row=3, column=1, sticky="w")
+    time_spin.grid(row=1, column=3, sticky="w")
 
     def run_simulation():
         """Run the LTspice simulation and plot the results using current settings."""
@@ -77,8 +77,8 @@ def main():
         ax.grid(True)
         canvas.draw()
 
-    run_button = tk.Button(root, text="RUN", command=run_simulation)
-    run_button.pack(padx=20, pady=20)
+    run_button = tk.Button(controls, text="RUN", command=run_simulation)
+    run_button.grid(row=0, column=4, rowspan=2, padx=(10, 0), pady=0, sticky="ns")
 
     root.mainloop()
 
