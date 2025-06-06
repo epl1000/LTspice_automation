@@ -25,11 +25,12 @@ and displays a matplotlib plot of the capacitor voltage over time. Execute it wi
 python pyltspicetest1.py
 ```
 
-### Using the simple GUI
+### Using the GUI
 
-Alternatively, run the `gui_runtime.py` script to open a small window with a
-**RUN** button. Clicking the button performs the same simulation and displays
-the resulting plot.
+Run the `gui_runtime.py` script to open a small window with controls for the
+simulation. Spin boxes allow you to set the source frequency, resistor and
+capacitor values and the stop time of the transient analysis. After selecting
+the desired values, click **RUN** to launch LTspice and plot the result.
 
 ```bash
 python gui_runtime.py
