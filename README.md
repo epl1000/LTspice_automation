@@ -10,10 +10,16 @@ This repository contains a small example using the [PyLTSpice](https://pypi.org/
 ```bash
 pip install PyLTSpice
 ```
+- Install the Python package `matplotlib` for plotting:
+
+```bash
+pip install matplotlib
+```
 
 ## Running the example
 
-The `pyltspicetest1.py` script creates a simple RC circuit netlist, runs LTspice, and prints a few data points from the simulation results. Execute it with Python:
+The `pyltspicetest1.py` script creates a simple RC circuit netlist, runs LTspice,
+and displays a matplotlib plot of the capacitor voltage over time. Execute it with Python:
 
 ```bash
 python pyltspicetest1.py
