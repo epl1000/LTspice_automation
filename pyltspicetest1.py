@@ -47,10 +47,18 @@ def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=
     print(f"Initializing SpiceEditor with existing file: {netlist_file_name}")
     try:
         netlist_editor_obj = SpiceEditor(netlist_file_name)
-        # Older PyLTSpice versions don't implement ``set_text``. Since the
-        # netlist has already been written to disk above, simply load the file
-        # with ``SpiceEditor`` and keep it unchanged.
-        netlist_editor_obj.save()
+        # The netlist file has already been written to disk so simply
+        # initialize the editor with it. Some PyLTSpice versions expose a
+        # ``save`` or ``save_netlist`` method while others do not. Since we do
+        # not modify the netlist contents here, saving is optional and skipped
+        # if the method is unavailable.
+        save_fn = getattr(netlist_editor_obj, "save", None)
+        if callable(save_fn):
+            save_fn()
+        else:
+            save_netlist_fn = getattr(netlist_editor_obj, "save_netlist", None)
+            if callable(save_netlist_fn):
+                save_netlist_fn()
         print("SpiceEditor initialized.")
     except Exception as e:
         print(f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}")
