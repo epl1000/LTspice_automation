@@ -10,11 +10,14 @@ import pyltspicetest1
 def main():
     root = tk.Tk()
     root.title("LTspice Runtime")
-    # Attempt to launch the window maximized
+
+    # Configure window size: keep full screen height but half the width
     try:
-        root.state("zoomed")
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        root.geometry(f"{screen_width // 2}x{screen_height}")
     except tk.TclError:
-        root.geometry("800x600")
+        root.geometry("400x600")
 
     figure = plt.Figure(figsize=(5, 4), dpi=100)
     ax = figure.add_subplot(111)
