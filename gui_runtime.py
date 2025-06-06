@@ -28,9 +28,9 @@ def main():
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill=tk.BOTH, expand=True)
 
-    freq_var = tk.DoubleVar(value=1000)
-    tk.Label(controls, text="Frequency (Hz)").grid(row=0, column=0, sticky="e")
-    freq_spin = tk.Spinbox(controls, from_=10, to=100000, increment=10,
+    freq_var = tk.DoubleVar(value=1.0)
+    tk.Label(controls, text="Frequency (kHz)").grid(row=0, column=0, sticky="e")
+    freq_spin = tk.Spinbox(controls, from_=0.01, to=100.0, increment=0.1,
                            textvariable=freq_var, width=10)
     freq_spin.grid(row=0, column=1, sticky="w")
 
@@ -54,7 +54,7 @@ def main():
 
     def run_simulation():
         """Run the LTspice simulation and plot the results using current settings."""
-        freq = freq_var.get()
+        freq = freq_var.get() * 1e3  # convert kHz to Hz
         res = res_var.get()
         cap = cap_var.get() * 1e-6  # convert uF to F
         stop_t = time_var.get() * 1e-3  # convert ms to s
