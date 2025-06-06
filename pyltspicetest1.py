@@ -1,6 +1,8 @@
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
 import sys
 import textwrap
+import matplotlib.pyplot as plt
+
 def main():
     
     # --- 1. Define the Netlist Content ---
@@ -83,6 +85,15 @@ def main():
         print("----------------|---------------")
         for i in range(min(10, len(time_trace.get_wave()))):
             print(f"{time_trace.get_wave()[i]:<15.6e} | {v_cap.get_wave()[i]:<15.6e}")
+
+        # Plot voltage vs time using matplotlib
+        plt.figure()
+        plt.plot(time_trace.get_wave(), v_cap.get_wave())
+        plt.title("Capacitor Voltage vs Time")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Voltage (V)")
+        plt.grid(True)
+        plt.show()
     else:
         print(
             f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file."
