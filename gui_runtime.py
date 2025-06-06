@@ -25,10 +25,46 @@ def main():
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill=tk.BOTH, expand=True)
 
+    controls = tk.Frame(root)
+    controls.pack(padx=10, pady=10)
+
+    freq_var = tk.DoubleVar(value=1000)
+    tk.Label(controls, text="Frequency (Hz)").grid(row=0, column=0, sticky="e")
+    freq_spin = tk.Spinbox(controls, from_=10, to=100000, increment=10,
+                           textvariable=freq_var, width=10)
+    freq_spin.grid(row=0, column=1, sticky="w")
+
+    res_var = tk.DoubleVar(value=1000)
+    tk.Label(controls, text="Resistor (Ohm)").grid(row=1, column=0, sticky="e")
+    res_spin = tk.Spinbox(controls, from_=100, to=10000, increment=100,
+                          textvariable=res_var, width=10)
+    res_spin.grid(row=1, column=1, sticky="w")
+
+    cap_var = tk.DoubleVar(value=1.0)
+    tk.Label(controls, text="Capacitor (uF)").grid(row=2, column=0, sticky="e")
+    cap_spin = tk.Spinbox(controls, from_=0.1, to=10.0, increment=0.1,
+                          textvariable=cap_var, width=10)
+    cap_spin.grid(row=2, column=1, sticky="w")
+
+    time_var = tk.DoubleVar(value=5.0)
+    tk.Label(controls, text="Stop Time (ms)").grid(row=3, column=0, sticky="e")
+    time_spin = tk.Spinbox(controls, from_=1.0, to=100.0, increment=1.0,
+                           textvariable=time_var, width=10)
+    time_spin.grid(row=3, column=1, sticky="w")
+
     def run_simulation():
-        """Run the LTspice simulation and plot the results."""
+        """Run the LTspice simulation and plot the results using current settings."""
+        freq = freq_var.get()
+        res = res_var.get()
+        cap = cap_var.get() * 1e-6  # convert uF to F
+        stop_t = time_var.get() * 1e-3  # convert ms to s
         try:
-            time_wave, v_cap_wave = pyltspicetest1.run_simulation()
+            time_wave, v_cap_wave = pyltspicetest1.run_simulation(
+                freq_hz=freq,
+                resistor_ohm=res,
+                capacitor_f=cap,
+                stop_time_s=stop_t,
+            )
         except Exception as exc:
             messagebox.showerror("Error", f"Simulation failed: {exc}")
             return

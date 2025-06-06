@@ -4,15 +4,28 @@ import textwrap
 import matplotlib.pyplot as plt
 
 
-def run_simulation():
-    """Run the LTspice simulation and return time and voltage traces."""
+def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=5e-3):
+    """Run the LTspice simulation with the provided values.
+
+    Parameters
+    ----------
+    freq_hz : float, optional
+        Sine source frequency in Hertz.
+    resistor_ohm : float, optional
+        Resistance value in Ohms.
+    capacitor_f : float, optional
+        Capacitance value in Farads.
+    stop_time_s : float, optional
+        Transient analysis stop time in seconds.
+    """
 
     # --- 1. Define the Netlist Content ---
-    netlist_content = """* Simple RC Circuit
-    V1 N001 0 SINE(0 1 1k) ; Voltage source: 1V amplitude, 1kHz
-    R1 N001 N002 1k         ; Resistor: 1k Ohm
-    C1 N002 0 1uF           ; Capacitor: 1uF
-    .tran 0 5m 0 1u         ; Transient analysis: 0 to 5ms, 1us step
+    step_time = stop_time_s / 1000 if stop_time_s > 0 else 1e-6
+    netlist_content = f"""* Simple RC Circuit
+    V1 N001 0 SINE(0 1 {freq_hz}) ; Voltage source: 1V amplitude
+    R1 N001 N002 {resistor_ohm}
+    C1 N002 0 {capacitor_f}
+    .tran 0 {stop_time_s} 0 {step_time}
     .end
     """
 
@@ -33,12 +46,10 @@ def run_simulation():
     # --- 3. Initialize SpiceEditor with the NOW EXISTING file ---
     print(f"Initializing SpiceEditor with existing file: {netlist_file_name}")
     try:
-        # Now that the file exists and has content, SpiceEditor should be able to open and parse it.
         netlist_editor_obj = SpiceEditor(netlist_file_name)
-        print("SpiceEditor initialized successfully.")
-        # There's no need to call .set_text() or .save() here if the file
-        # already contains the complete and correct netlist and we don't
-        # intend to modify it further with SpiceEditor methods at this stage.
+        netlist_editor_obj.set_text(textwrap.dedent(netlist_content))
+        netlist_editor_obj.save()
+        print("SpiceEditor initialized and netlist content updated.")
     except Exception as e:
         print(f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}")
         raise
