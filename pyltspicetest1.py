@@ -1,5 +1,6 @@
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
 import sys
+import textwrap
 def main():
     
     # --- 1. Define the Netlist Content ---
@@ -19,7 +20,7 @@ def main():
     print(f"Creating and writing netlist content to file: {netlist_file_name}")
     try:
         with open(netlist_file_name, 'w', encoding='utf-8') as f:
-            f.write(netlist_content)
+            f.write(textwrap.dedent(netlist_content))
         print(f"Netlist file '{netlist_file_name}' created and written successfully.")
     except IOError as e:
         print(f"FATAL ERROR: Could not write netlist file {netlist_file_name}: {e}")
