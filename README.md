@@ -25,6 +25,16 @@ and displays a matplotlib plot of the capacitor voltage over time. Execute it wi
 python pyltspicetest1.py
 ```
 
+### Using the simple GUI
+
+Alternatively, run the `gui_runtime.py` script to open a small window with a
+**RUN** button. Clicking the button performs the same simulation and displays
+the resulting plot.
+
+```bash
+python gui_runtime.py
+```
+
 Upon completion, the script generates:
 
 - `simple_rc.net` – the generated netlist file
