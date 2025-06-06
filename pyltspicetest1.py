@@ -1,4 +1,5 @@
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
+import sys
 def main():
     
     # --- 1. Define the Netlist Content ---
@@ -22,7 +23,7 @@ def main():
         print(f"Netlist file '{netlist_file_name}' created and written successfully.")
     except IOError as e:
         print(f"FATAL ERROR: Could not write netlist file {netlist_file_name}: {e}")
-        exit()
+        sys.exit(1)
     
     # --- 3. Initialize SpiceEditor with the NOW EXISTING file ---
     print(f"Initializing SpiceEditor with existing file: {netlist_file_name}")
@@ -35,7 +36,7 @@ def main():
         # intend to modify it further with SpiceEditor methods at this stage.
     except Exception as e:
         print(f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}")
-        exit()
+        sys.exit(1)
     
     # --- 4. Run the LTSpice Simulation (modern API) ---
     print(f"\nRunning simulation for {netlist_file_name}...")
@@ -49,7 +50,7 @@ def main():
         print("LTSpice simulation completed successfully.")
     except Exception as e:
         print(f"Error: LTSpice simulation failed – {e}")
-        exit()
+        sys.exit(1)
     
     print(f"Simulation output (raw file): {raw_file_path}")
     
@@ -59,7 +60,7 @@ def main():
         raw_data = RawRead(raw_file_path)
     except Exception as e:
         print(f"Error reading raw file {raw_file_path}: {e}")
-        exit()
+        sys.exit(1)
     print("Raw file read successfully.")
     
     
