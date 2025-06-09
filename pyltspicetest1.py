@@ -10,7 +10,10 @@ def run_simulation():
     """Run the LTspice simulation using a fixed op-amp test netlist."""
 
     # --- 1. Define the Netlist Content ---
-    netlist_content = textwrap.dedent("""* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
+    # Use a raw string so backslashes in the Windows path are not interpreted as
+    # escape sequences.  This avoids a ``SyntaxWarning: invalid escape sequence``
+    # when the file is executed on Windows.
+    netlist_content = textwrap.dedent(r"""* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
 V4 VCC 0 12
 V5 -VCC 0 -12
 R9 Vout N001 1k
@@ -81,12 +84,15 @@ C1 Vout N001 5p
         print(f"Error: LTSpice simulation failed – {e}")
         raise
 
+    if raw_file_path is None:
+        raise RuntimeError("LTspice did not generate a raw output file")
+
     print(f"Simulation output (raw file): {raw_file_path}")
 
     # --- 5. Read the Simulation Output File ---
     print("\nReading simulation output...")
     try:
-        raw_data = RawRead(raw_file_path)
+        raw_data = RawRead(str(raw_file_path))
     except Exception as e:
         print(f"Error reading raw file {raw_file_path}: {e}")
         raise
