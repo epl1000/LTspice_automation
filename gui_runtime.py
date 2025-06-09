@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
@@ -28,12 +28,22 @@ def main():
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill=tk.BOTH, expand=True)
 
-
-
     def run_simulation():
-        """Run the LTspice simulation and plot the results."""
+        """Prompt for the LM7171 model file and run the simulation."""
+
+        lib_path = filedialog.askopenfilename(
+            title="Select LM7171.lib",
+            filetypes=[("SPICE model", "*.lib"), ("All files", "*.*")],
+        )
+        if not lib_path:
+            messagebox.showinfo(
+                "No file selected",
+                "Simulation cancelled: no model file provided.",
+            )
+            return
+
         try:
-            time_wave, v_cap_wave = pyltspicetest1.run_simulation()
+            time_wave, v_cap_wave = pyltspicetest1.run_simulation(lib_path)
         except Exception as exc:
             messagebox.showerror("Error", f"Simulation failed: {exc}")
             return
