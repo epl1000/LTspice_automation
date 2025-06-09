@@ -5,6 +5,9 @@ This repository contains a small example using the [PyLTSpice](https://pypi.org/
 ## Prerequisites
 
 - [LTspice](https://www.analog.com/en/design-center/design-tools-and-calculators/ltspice-simulator.html) must be installed and available on your system.
+  Ensure the LTspice executable is accessible from the command line. If it is
+  installed in a non-standard location you can specify the path explicitly with
+  `SimRunner.create_from("/path/to/LTspice")`.
 - Install the Python package `PyLTSpice`:
 
 ```bash
