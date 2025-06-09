@@ -26,13 +26,17 @@ LM7171 model, runs LTspice, and displays a matplotlib plot of the output
 voltage over time. Execute it with Python:
 
 ```bash
-python pyltspicetest1.py
+python pyltspicetest1.py [path/to/LM7171.lib]
 ```
+If the path to the model is omitted, the script looks for ``LM7171.lib`` in the
+current working directory.
 
 ### Using the GUI
 
 Run the `gui_runtime.py` script to open a small window with a **RUN** button.
-Press **RUN** to launch LTspice and plot the simulation result.
+Press **RUN** and you will be prompted to select the `LM7171.lib` model file
+used in the example. After selecting the file, LTspice will run and the
+simulation result will be plotted.
 
 ```bash
 python gui_runtime.py

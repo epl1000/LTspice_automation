@@ -1,37 +1,54 @@
 """Simple wrapper around PyLTSpice to run an op-amp test netlist."""
 
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
+from pathlib import Path
 import sys
 import textwrap
 import matplotlib.pyplot as plt
 
 
-def run_simulation():
-    """Run the LTspice simulation using a fixed op-amp test netlist."""
+def run_simulation(lib_path: str | None = None):
+    """Run the LTspice simulation using a fixed op-amp test netlist.
+
+    Parameters
+    ----------
+    lib_path:
+        Optional path to the ``LM7171.lib`` model file. When provided, the
+        ``.include`` statement in the generated netlist will reference this
+        absolute path. Otherwise the short file name ``lm7171.lib`` is used.
+    """
 
     # --- 1. Define the Netlist Content ---
     # Use a raw string so backslashes in the Windows path are not interpreted as
     # escape sequences.  This avoids a ``SyntaxWarning: invalid escape sequence``
     # when the file is executed on Windows.
-    netlist_content = textwrap.dedent(r"""* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
-V4 VCC 0 12
-V5 -VCC 0 -12
-R9 Vout N001 1k
-XU2 N003 N001 VCC -VCC Vout LM7171
-R3 Vout 0 1K
-V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)
-R1 N003 N002 500
-C1 Vout N001 5p
-.include lm7171.lib
-* .ac dec 100 1K 20000K
-.tran 5u
-.backanno
-.end
-""").lstrip()
+    include_line = (
+        ".include lm7171.lib"
+        if lib_path is None
+        else f'.include "{Path(lib_path).as_posix()}"'
+    )
+
+    netlist_lines = [
+        "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
+        "V4 VCC 0 12",
+        "V5 -VCC 0 -12",
+        "R9 Vout N001 1k",
+        "XU2 N003 N001 VCC -VCC Vout LM7171",
+        "R3 Vout 0 1K",
+        "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
+        "R1 N003 N002 500",
+        "C1 Vout N001 5p",
+        include_line,
+        "* .ac dec 100 1K 20000K",
+        ".tran 5u",
+        ".backanno",
+        ".end",
+    ]
+    netlist_content = "\n".join(netlist_lines)
 
     # Define file names
     netlist_file_name = "opamp_test.net"
-    output_folder = "temp_sim_output"   # PyLTspice will create this if it doesn't exist
+    output_folder = "temp_sim_output"  # PyLTspice will create this if it doesn't exist
 
     # --- 2. Manually create and write the netlist file first ---
     print(f"Creating and writing netlist content to file: {netlist_file_name}")
@@ -67,7 +84,9 @@ C1 Vout N001 5p
                     save_netlist_fn(netlist_file_name)
         print("SpiceEditor initialized.")
     except Exception as e:
-        print(f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}")
+        print(
+            f"FATAL ERROR: Could not initialize SpiceEditor with file {netlist_file_name}: {e}"
+        )
         raise
 
     # --- 4. Run the LTSpice Simulation (modern API) ---
@@ -106,7 +125,9 @@ C1 Vout N001 5p
     available_traces_lower = [name.lower() for name in available_traces]
 
     if trace_name_lower in available_traces_lower:
-        actual_trace_name = available_traces[available_traces_lower.index(trace_name_lower)]
+        actual_trace_name = available_traces[
+            available_traces_lower.index(trace_name_lower)
+        ]
         print(f"\nGetting trace: {actual_trace_name}")
         v_cap = raw_data.get_trace(actual_trace_name)
         time_trace = raw_data.get_trace("time")
@@ -121,7 +142,9 @@ C1 Vout N001 5p
         v_cap_wave = v_cap.get_wave()
         return time_wave, v_cap_wave
     else:
-        print(f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file.")
+        print(
+            f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file."
+        )
         print("Available traces:", available_traces)
         raise ValueError(f"Trace '{trace_name_capacitor_voltage}' not found")
 
@@ -129,8 +152,10 @@ C1 Vout N001 5p
 def main():
     """Run the simulation and display a matplotlib plot."""
 
+    lib_path = sys.argv[1] if len(sys.argv) > 1 else None
+
     try:
-        time_wave, v_cap_wave = run_simulation()
+        time_wave, v_cap_wave = run_simulation(lib_path)
     except Exception:
         sys.exit(1)
 
@@ -144,6 +169,7 @@ def main():
     plt.show()
 
     print("\nBasic PyLTspice example finished.")
+
 
 if __name__ == "__main__":
     main()
