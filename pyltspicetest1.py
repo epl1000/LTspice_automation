@@ -10,8 +10,7 @@ def run_simulation():
     """Run the LTspice simulation using a fixed op-amp test netlist."""
 
     # --- 1. Define the Netlist Content ---
-    netlist_content = """
-* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
+    netlist_content = textwrap.dedent("""* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
 V4 VCC 0 12
 V5 -VCC 0 -12
 R9 Vout N001 1k
@@ -25,7 +24,7 @@ C1 Vout N001 5p
 .tran 5u
 .backanno
 .end
-"""
+""").lstrip()
 
     # Define file names
     netlist_file_name = "opamp_test.net"
