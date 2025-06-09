@@ -1,36 +1,34 @@
+"""Simple wrapper around PyLTSpice to run an op-amp test netlist."""
+
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
 import sys
 import textwrap
 import matplotlib.pyplot as plt
 
 
-def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=5e-3):
-    """Run the LTspice simulation with the provided values.
-
-    Parameters
-    ----------
-    freq_hz : float, optional
-        Sine source frequency in Hertz.
-    resistor_ohm : float, optional
-        Resistance value in Ohms.
-    capacitor_f : float, optional
-        Capacitance value in Farads.
-    stop_time_s : float, optional
-        Transient analysis stop time in seconds.
-    """
+def run_simulation():
+    """Run the LTspice simulation using a fixed op-amp test netlist."""
 
     # --- 1. Define the Netlist Content ---
-    step_time = stop_time_s / 1000 if stop_time_s > 0 else 1e-6
-    netlist_content = f"""* Simple RC Circuit
-    V1 N001 0 SINE(0 1 {freq_hz}) ; Voltage source: 1V amplitude
-    R1 N001 N002 {resistor_ohm}
-    C1 N002 0 {capacitor_f}
-    .tran 0 {stop_time_s} 0 {step_time}
-    .end
-    """
+    netlist_content = """
+* E:\LTSpice_Models\activeBP2 - Copy\opamptest1.asc
+V4 VCC 0 12
+V5 -VCC 0 -12
+R9 Vout N001 1k
+XU2 N003 N001 VCC -VCC Vout LM7171
+R3 Vout 0 1K
+V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)
+R1 N003 N002 500
+C1 Vout N001 5p
+.include lm7171.lib
+* .ac dec 100 1K 20000K
+.tran 5u
+.backanno
+.end
+"""
 
     # Define file names
-    netlist_file_name = "simple_rc.net"
+    netlist_file_name = "opamp_test.net"
     output_folder = "temp_sim_output"   # PyLTspice will create this if it doesn't exist
 
     # --- 2. Manually create and write the netlist file first ---
@@ -96,7 +94,7 @@ def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=
     print("Raw file read successfully.")
 
     # --- 6. Get a Specific Trace ---
-    trace_name_capacitor_voltage = "V(N002)"
+    trace_name_capacitor_voltage = "V(vout)"
 
     available_traces = raw_data.get_trace_names()
     trace_name_lower = trace_name_capacitor_voltage.lower()
@@ -134,7 +132,7 @@ def main():
     # Plot voltage vs time using matplotlib
     plt.figure()
     plt.plot(time_wave, v_cap_wave)
-    plt.title("Capacitor Voltage vs Time")
+    plt.title("Output Voltage vs Time")
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (V)")
     plt.grid(True)

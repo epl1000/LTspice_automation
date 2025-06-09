@@ -18,8 +18,9 @@ pip install matplotlib
 
 ## Running the example
 
-The `pyltspicetest1.py` script creates a simple RC circuit netlist, runs LTspice,
-and displays a matplotlib plot of the capacitor voltage over time. Execute it with Python:
+The `pyltspicetest1.py` script creates a small op-amp test netlist using the
+LM7171 model, runs LTspice, and displays a matplotlib plot of the output
+voltage over time. Execute it with Python:
 
 ```bash
 python pyltspicetest1.py
@@ -27,10 +28,8 @@ python pyltspicetest1.py
 
 ### Using the GUI
 
-Run the `gui_runtime.py` script to open a small window with controls for the
-simulation. Spin boxes allow you to set the source frequency, resistor and
-capacitor values and the stop time of the transient analysis. After selecting
-the desired values, click **RUN** to launch LTspice and plot the result.
+Run the `gui_runtime.py` script to open a small window with a **RUN** button.
+Press **RUN** to launch LTspice and plot the simulation result.
 
 ```bash
 python gui_runtime.py
@@ -38,7 +37,7 @@ python gui_runtime.py
 
 Upon completion, the script generates:
 
-- `simple_rc.net` – the generated netlist file
+- `opamp_test.net` – the generated netlist file
 - `temp_sim_output/` – directory containing the `.raw` and `.log` simulation output files
 
 ## Cleaning up
@@ -46,6 +45,6 @@ Upon completion, the script generates:
 To remove the generated files after running the example, delete the netlist and output directory:
 
 ```bash
-rm simple_rc.net
+rm opamp_test.net
 rm -r temp_sim_output
 ```
