@@ -21,15 +21,16 @@ pip install matplotlib
 
 ## Running the example
 
-The `pyltspicetest1.py` script creates a small op-amp test netlist using the
-LM7171 model, runs LTspice, and displays a matplotlib plot of the output
-voltage over time. Execute it with Python:
+The `pyltspicetest1.py` script creates a small op-amp test netlist. By default
+it expects the `LM7171.lib` file in the current directory, but you can pass the
+path to any compatible op-amp model file. The script reads the first `.SUBCKT`
+definition from the library and instantiates that subcircuit in the netlist.
+Run it with Python:
 
 ```bash
-python pyltspicetest1.py [path/to/LM7171.lib]
+python pyltspicetest1.py [path/to/opamp.lib]
 ```
-If the path to the model is omitted, the script looks for ``LM7171.lib`` in the
-current working directory.
+If the model path is omitted, `LM7171.lib` is used.
 
 ### Using the GUI
 

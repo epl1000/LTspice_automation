@@ -7,6 +7,23 @@ import textwrap
 import matplotlib.pyplot as plt
 
 
+def _first_subckt_name(lib_path: Path) -> str:
+    """Return the name of the first subcircuit defined in a SPICE library."""
+
+    try:
+        with lib_path.open("r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line_stripped = line.strip().lower()
+                if line_stripped.startswith(".subckt"):
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        return parts[1]
+    except OSError:
+        pass
+
+    raise ValueError(f"Could not determine subcircuit name from {lib_path}")
+
+
 def run_simulation(
     lib_path: str | None = None,
     r9_value: str | float = "1k",
@@ -19,9 +36,10 @@ def run_simulation(
     Parameters
     ----------
     lib_path:
-        Optional path to the ``LM7171.lib`` model file. When provided, the
+        Optional path to an op-amp ``.lib`` model file. When provided, the
         ``.include`` statement in the generated netlist will reference this
-        absolute path. Otherwise the short file name ``lm7171.lib`` is used.
+        absolute path. Otherwise the short file name ``lm7171.lib`` is used and
+        the model is assumed to define the ``LM7171`` subcircuit.
     r9_value:
         Value of the gain resistor ``R9``.
     r1_value:
@@ -36,18 +54,23 @@ def run_simulation(
     # Use a raw string so backslashes in the Windows path are not interpreted as
     # escape sequences.  This avoids a ``SyntaxWarning: invalid escape sequence``
     # when the file is executed on Windows.
+    include_path = Path(lib_path) if lib_path is not None else Path("lm7171.lib")
     include_line = (
-        ".include lm7171.lib"
-        if lib_path is None
-        else f'.include "{Path(lib_path).as_posix()}"'
+        f'.include "{include_path.as_posix()}"'
+        if include_path.is_absolute()
+        else f".include {include_path.as_posix()}"
     )
+    try:
+        subckt_name = _first_subckt_name(include_path)
+    except Exception:
+        subckt_name = "LM7171"
 
     netlist_lines = [
         "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
         "V4 VCC 0 12",
         "V5 -VCC 0 -12",
         f"R9 Vout N001 {r9_value}",
-        "XU2 N002 N001 VCC -VCC Vout LM7171",
+        f"XU2 N002 N001 VCC -VCC Vout {subckt_name}",
         f"R3 Vout 0 {r3_value}",
         "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
         f"R1 N001 0 {r1_value}",
