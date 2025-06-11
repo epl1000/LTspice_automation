@@ -44,15 +44,29 @@ def main():
     # arrows are pressed.  Using ``%g`` preserves scientific notation without
     # relying on the ``%e`` specifier, which is known to cause ``TclError`` on
     # some Tcl/Tk versions.
-    tk.Spinbox(
-        spinner_frame,
-        from_=ONE_PF,
-        to=1e-6,
-        increment=ONE_PF,
-        format="%g",
-        textvariable=c1_var,
-        width=8,
-    ).grid(row=0, column=3, padx=5, pady=2)
+    try:
+        c1_spinbox = tk.Spinbox(
+            spinner_frame,
+            from_=ONE_PF,
+            to=1e-6,
+            increment=ONE_PF,
+            format="%g",
+            textvariable=c1_var,
+            width=8,
+        )
+    except tk.TclError:
+        # Older Tk versions do not recognise the "%g" format specifier.
+        # Fallback to the default format which may display values as 0.000000
+        # for very small numbers, but at least avoids raising an exception.
+        c1_spinbox = tk.Spinbox(
+            spinner_frame,
+            from_=ONE_PF,
+            to=1e-6,
+            increment=ONE_PF,
+            textvariable=c1_var,
+            width=8,
+        )
+    c1_spinbox.grid(row=0, column=3, padx=5, pady=2)
 
     tk.Label(spinner_frame, text="R1 (Input Ω)").grid(row=1, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r1_var, width=8).grid(row=1, column=1, padx=5, pady=2)
