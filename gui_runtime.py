@@ -38,16 +38,18 @@ def main():
     tk.Label(spinner_frame, text="R9 (Gain Ω)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="C1 (F)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
-    # Tk's Spinbox widget does not reliably support the "e" format specifier
-    # across platforms.  Using it on some Tcl/Tk versions results in a
-    # ``TclError: bad spinbox format specifier".  Simply omit the ``format``
-    # argument and let Tk handle the numeric string representation so the GUI
-    # works on all systems.
+    # The default Spinbox ``format`` uses ``%f`` with six decimal digits.  With
+    # the picofarad values used for C1 this results in all values being rendered
+    # as ``0.000000`` so it appears as if the widget does not change when the
+    # arrows are pressed.  Using ``%g`` preserves scientific notation without
+    # relying on the ``%e`` specifier, which is known to cause ``TclError`` on
+    # some Tcl/Tk versions.
     tk.Spinbox(
         spinner_frame,
         from_=ONE_PF,
         to=1e-6,
         increment=ONE_PF,
+        format="%g",
         textvariable=c1_var,
         width=8,
     ).grid(row=0, column=3, padx=5, pady=2)
