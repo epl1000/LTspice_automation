@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
+from pathlib import Path
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
@@ -59,23 +60,55 @@ def main():
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill=tk.BOTH, expand=True)
 
-    def run_simulation():
-        """Prompt for the LM7171 model file and run the simulation."""
+    last_model_file = "last_model.txt"
 
+    try:
+        with open(last_model_file, "r", encoding="utf-8") as f:
+            current_model = f.read().strip()
+    except FileNotFoundError:
+        current_model = ""
+
+    model_label_var = tk.StringVar()
+
+    def update_model_label():
+        """Refresh the displayed model name."""
+        name = Path(current_model).name if current_model else "None"
+        model_label_var.set(f"OP AMP MODEL: {name}")
+
+    update_model_label()
+
+    def load_model():
+        """Prompt for an op-amp model file and remember the selection."""
+
+        nonlocal current_model
         lib_path = filedialog.askopenfilename(
-            title="Select LM7171.lib",
+            title="Select op-amp model",
             filetypes=[("SPICE model", "*.lib"), ("All files", "*.*")],
         )
         if not lib_path:
+            return
+
+        current_model = lib_path
+        try:
+            with open(last_model_file, "w", encoding="utf-8") as f:
+                f.write(current_model)
+        except OSError:
+            pass
+        update_model_label()
+
+    def run_simulation():
+        """Run the simulation using the currently loaded model."""
+
+        if not current_model:
             messagebox.showinfo(
-                "No file selected",
-                "Simulation cancelled: no model file provided.",
+                "No model loaded",
+                "Please load an op-amp model before running the simulation.",
             )
             return
 
         try:
             time_wave, v_cap_wave = pyltspicetest1.run_simulation(
-                lib_path,
+                current_model,
                 r9_var.get(),
                 r1_var.get(),
                 r3_var.get(),
@@ -93,8 +126,18 @@ def main():
         ax.grid(True)
         canvas.draw()
 
-    run_button = tk.Button(controls, text="RUN", command=run_simulation)
-    run_button.grid(row=0, column=1, padx=5, pady=0, sticky="w")
+    run_frame = tk.Frame(controls)
+    run_frame.grid(row=0, column=1, padx=5, pady=0, sticky="w")
+
+    run_button = tk.Button(run_frame, text="RUN", command=run_simulation)
+    run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
+
+    tk.Label(run_frame, textvariable=model_label_var).grid(
+        row=0, column=1, padx=5, pady=0, sticky="w"
+    )
+
+    load_button = tk.Button(run_frame, text="Load Model", command=load_model)
+    load_button.grid(row=1, column=0, padx=5, pady=2, sticky="w")
 
     root.mainloop()
 

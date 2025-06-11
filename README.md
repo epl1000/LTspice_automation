@@ -33,12 +33,16 @@ current working directory.
 
 ### Using the GUI
 
-Run the `gui_runtime.py` script to open a small window with a **RUN** button.
-Four spin boxes allow you to set the values of the gain resistor (`R9`),
-input resistor (`R1`), load resistor (`R3`), and feedback capacitor (`C1`).
-Press **RUN** and you will be prompted to select the `LM7171.lib` model file
-used in the example. After selecting the file, the netlist is updated with the
-spinner values, LTspice runs and the simulation result is plotted.
+Run the `gui_runtime.py` script to open a small window with a **RUN** button
+and a **Load Model** button. Four spin boxes allow you to set the values of the
+gain resistor (`R9`), input resistor (`R1`), load resistor (`R3`), and feedback
+capacitor (`C1`).
+
+Click **Load Model** to select the op-amp model file. The selected file is
+remembered across runs and its name is displayed to the right of the **RUN**
+button. Press **RUN** to run the simulation using the currently loaded model.
+The netlist is updated with the spinner values and the simulation result is
+plotted.
 
 ```bash
 python gui_runtime.py
