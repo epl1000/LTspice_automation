@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import textwrap
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def _first_subckt_name(lib_path: Path) -> str:
@@ -177,7 +178,49 @@ def run_simulation(
 
         time_wave = time_trace.get_wave()
         v_cap_wave = v_cap.get_wave()
-        return time_wave, v_cap_wave
+
+        # --- 7. Calculate slew rate and settling time ---
+        time_arr = np.array(time_wave)
+        v_arr = np.array(v_cap_wave)
+
+        v_low = float(v_arr.min())
+        v_high = float(v_arr.max())
+        swing = v_high - v_low
+        v_10 = v_low + 0.1 * swing
+        v_90 = v_low + 0.9 * swing
+
+        # Find 10% and 90% crossing using linear interpolation
+        t_10 = None
+        for i in range(len(v_arr) - 1):
+            if v_arr[i] <= v_10 and v_arr[i + 1] >= v_10:
+                t_10 = np.interp(v_10, v_arr[i : i + 2], time_arr[i : i + 2])
+                start_idx = i
+                break
+        t_90 = None
+        if t_10 is not None:
+            for j in range(start_idx, len(v_arr) - 1):
+                if v_arr[j] <= v_90 and v_arr[j + 1] >= v_90:
+                    t_90 = np.interp(v_90, v_arr[j : j + 2], time_arr[j : j + 2])
+                    break
+
+        if t_10 is not None and t_90 is not None and t_90 > t_10:
+            slew_rate = (v_90 - v_10) / (t_90 - t_10)
+        else:
+            slew_rate = float("nan")
+
+        # Settling time estimation using derivative threshold
+        settling_time = float("nan")
+        if t_90 is not None:
+            grad = np.gradient(v_arr, time_arr)
+            max_grad = np.max(np.abs(grad))
+            if max_grad > 0:
+                thresh = 0.01 * max_grad
+                for k in range(len(time_arr)):
+                    if time_arr[k] >= t_90 and np.all(np.abs(grad[k:k+5]) < thresh):
+                        settling_time = time_arr[k] - t_90
+                        break
+
+        return time_wave, v_cap_wave, slew_rate, settling_time
     else:
         print(
             f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file."
@@ -192,7 +235,7 @@ def main():
     lib_path = sys.argv[1] if len(sys.argv) > 1 else None
 
     try:
-        time_wave, v_cap_wave = run_simulation(lib_path)
+        time_wave, v_cap_wave, slew_rate, settling_time = run_simulation(lib_path)
     except Exception:
         sys.exit(1)
 
@@ -204,6 +247,9 @@ def main():
     plt.ylabel("Voltage (V)")
     plt.grid(True)
     plt.show()
+
+    print(f"90-10 Slew Rate: {slew_rate / 1e6:.3f} V/us")
+    print(f"Settling Time: {settling_time * 1e6:.3f} us")
 
     print("\nBasic PyLTspice example finished.")
 
