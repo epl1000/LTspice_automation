@@ -116,6 +116,7 @@ def main():
         update_model_label()
 
     slew_label_var = tk.StringVar()
+    slew80_label_var = tk.StringVar()
     settling_label_var = tk.StringVar()
 
     def run_simulation():
@@ -129,7 +130,7 @@ def main():
             return
 
         try:
-            time_wave, v_cap_wave, slew_rate, settling_time = pyltspicetest1.run_simulation(
+            time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = pyltspicetest1.run_simulation(
                 current_model,
                 r9_var.get(),
                 r1_var.get(),
@@ -148,7 +149,8 @@ def main():
         ax.grid(True)
         canvas.draw()
 
-        slew_label_var.set(f"90-10 Slew Rate: {slew_rate/1e6:.3f} V/us")
+        slew_label_var.set(f"90-10 Slew Rate: {sr_90_10/1e6:.3f} V/us")
+        slew80_label_var.set(f"80-20 Slew Rate: {sr_80_20/1e6:.3f} V/us")
         settling_label_var.set(f"Settling Time: {settling_time * 1e6:.3f} us")
 
     run_frame = tk.Frame(controls)
@@ -164,7 +166,15 @@ def main():
 
     tk.Label(run_frame, textvariable=slew_label_var).grid(
         row=0,
-        column=1,
+        column=2,
+        padx=5,
+        pady=2,
+        sticky="w",
+    )
+
+    tk.Label(run_frame, textvariable=slew80_label_var).grid(
+        row=1,
+        column=2,
         padx=5,
         pady=2,
         sticky="w",
@@ -172,7 +182,7 @@ def main():
 
     tk.Label(run_frame, textvariable=settling_label_var).grid(
         row=0,
-        column=2,
+        column=3,
         padx=5,
         pady=2,
         sticky="w",

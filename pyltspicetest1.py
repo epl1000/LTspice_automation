@@ -49,6 +49,12 @@ def run_simulation(
         Value of the load resistor ``R3``.
     c1_value:
         Value of the feedback capacitor ``C1``.
+
+    Returns
+    -------
+    tuple
+        ``(time_wave, v_cap_wave, slew_rate_90_10, slew_rate_80_20, settling_time)``
+        where the slew rates are in V/s and settling time is in seconds.
     """
 
     # --- 1. Define the Netlist Content ---
@@ -188,25 +194,44 @@ def run_simulation(
         swing = v_high - v_low
         v_10 = v_low + 0.1 * swing
         v_90 = v_low + 0.9 * swing
+        v_20 = v_low + 0.2 * swing
+        v_80 = v_low + 0.8 * swing
 
         # Find 10% and 90% crossing using linear interpolation
         t_10 = None
+        t_20 = None
         for i in range(len(v_arr) - 1):
-            if v_arr[i] <= v_10 and v_arr[i + 1] >= v_10:
+            if t_10 is None and v_arr[i] <= v_10 and v_arr[i + 1] >= v_10:
                 t_10 = np.interp(v_10, v_arr[i : i + 2], time_arr[i : i + 2])
-                start_idx = i
+                start_idx_10 = i
+            if t_20 is None and v_arr[i] <= v_20 and v_arr[i + 1] >= v_20:
+                t_20 = np.interp(v_20, v_arr[i : i + 2], time_arr[i : i + 2])
+                start_idx_20 = i
+            if t_10 is not None and t_20 is not None:
                 break
+
         t_90 = None
         if t_10 is not None:
-            for j in range(start_idx, len(v_arr) - 1):
+            for j in range(start_idx_10, len(v_arr) - 1):
                 if v_arr[j] <= v_90 and v_arr[j + 1] >= v_90:
                     t_90 = np.interp(v_90, v_arr[j : j + 2], time_arr[j : j + 2])
                     break
+        t_80 = None
+        if t_20 is not None:
+            for j in range(start_idx_20, len(v_arr) - 1):
+                if v_arr[j] <= v_80 and v_arr[j + 1] >= v_80:
+                    t_80 = np.interp(v_80, v_arr[j : j + 2], time_arr[j : j + 2])
+                    break
 
         if t_10 is not None and t_90 is not None and t_90 > t_10:
-            slew_rate = (v_90 - v_10) / (t_90 - t_10)
+            slew_rate_90_10 = (v_90 - v_10) / (t_90 - t_10)
         else:
-            slew_rate = float("nan")
+            slew_rate_90_10 = float("nan")
+
+        if t_20 is not None and t_80 is not None and t_80 > t_20:
+            slew_rate_80_20 = (v_80 - v_20) / (t_80 - t_20)
+        else:
+            slew_rate_80_20 = float("nan")
 
         # Settling time estimation using derivative threshold
         settling_time = float("nan")
@@ -220,7 +245,13 @@ def run_simulation(
                         settling_time = time_arr[k] - t_90
                         break
 
-        return time_wave, v_cap_wave, slew_rate, settling_time
+        return (
+            time_wave,
+            v_cap_wave,
+            slew_rate_90_10,
+            slew_rate_80_20,
+            settling_time,
+        )
     else:
         print(
             f"\nError: Trace '{trace_name_capacitor_voltage}' not found in the raw file."
@@ -235,7 +266,7 @@ def main():
     lib_path = sys.argv[1] if len(sys.argv) > 1 else None
 
     try:
-        time_wave, v_cap_wave, slew_rate, settling_time = run_simulation(lib_path)
+        time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = run_simulation(lib_path)
     except Exception:
         sys.exit(1)
 
@@ -248,7 +279,8 @@ def main():
     plt.grid(True)
     plt.show()
 
-    print(f"90-10 Slew Rate: {slew_rate / 1e6:.3f} V/us")
+    print(f"90-10 Slew Rate: {sr_90_10 / 1e6:.3f} V/us")
+    print(f"80-20 Slew Rate: {sr_80_20 / 1e6:.3f} V/us")
     print(f"Settling Time: {settling_time * 1e6:.3f} us")
 
     print("\nBasic PyLTspice example finished.")
