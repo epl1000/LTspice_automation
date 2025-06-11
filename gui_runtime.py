@@ -22,6 +22,25 @@ def main():
     controls = tk.Frame(root)
     controls.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
 
+    # --- Spinner controls for netlist values ---
+    spinner_frame = tk.Frame(controls)
+    spinner_frame.grid(row=0, column=0, sticky="w")
+
+    r9_var = tk.DoubleVar(value=1000)
+    r1_var = tk.DoubleVar(value=500)
+    r3_var = tk.DoubleVar(value=1000)
+    c1_var = tk.DoubleVar(value=5e-12)
+
+    tk.Label(spinner_frame, text="R9 (Gain Ω)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
+    tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
+    tk.Label(spinner_frame, text="C1 (F)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
+    tk.Spinbox(spinner_frame, from_=1e-12, to=1e-6, increment=1e-12, textvariable=c1_var, width=8, format="%.2e").grid(row=0, column=3, padx=5, pady=2)
+
+    tk.Label(spinner_frame, text="R1 (Input Ω)").grid(row=1, column=0, padx=5, pady=2, sticky="w")
+    tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r1_var, width=8).grid(row=1, column=1, padx=5, pady=2)
+    tk.Label(spinner_frame, text="R3 (Load Ω)").grid(row=1, column=2, padx=5, pady=2, sticky="w")
+    tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r3_var, width=8).grid(row=1, column=3, padx=5, pady=2)
+
     figure = plt.Figure(figsize=(5, 4), dpi=100)
     ax = figure.add_subplot(111)
     canvas = FigureCanvasTkAgg(figure, master=root)
@@ -43,7 +62,13 @@ def main():
             return
 
         try:
-            time_wave, v_cap_wave = pyltspicetest1.run_simulation(lib_path)
+            time_wave, v_cap_wave = pyltspicetest1.run_simulation(
+                lib_path,
+                r9_var.get(),
+                r1_var.get(),
+                r3_var.get(),
+                c1_var.get(),
+            )
         except Exception as exc:
             messagebox.showerror("Error", f"Simulation failed: {exc}")
             return
@@ -57,7 +82,7 @@ def main():
         canvas.draw()
 
     run_button = tk.Button(controls, text="RUN", command=run_simulation)
-    run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
+    run_button.grid(row=0, column=1, padx=5, pady=0, sticky="w")
 
     root.mainloop()
 

@@ -34,9 +34,11 @@ current working directory.
 ### Using the GUI
 
 Run the `gui_runtime.py` script to open a small window with a **RUN** button.
+Four spin boxes allow you to set the values of the gain resistor (`R9`),
+input resistor (`R1`), load resistor (`R3`), and feedback capacitor (`C1`).
 Press **RUN** and you will be prompted to select the `LM7171.lib` model file
-used in the example. After selecting the file, LTspice will run and the
-simulation result will be plotted.
+used in the example. After selecting the file, the netlist is updated with the
+spinner values, LTspice runs and the simulation result is plotted.
 
 ```bash
 python gui_runtime.py
