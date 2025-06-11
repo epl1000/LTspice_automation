@@ -7,7 +7,13 @@ import textwrap
 import matplotlib.pyplot as plt
 
 
-def run_simulation(lib_path: str | None = None):
+def run_simulation(
+    lib_path: str | None = None,
+    r9_value: str | float = "1k",
+    r1_value: str | float = "500",
+    r3_value: str | float = "1k",
+    c1_value: str | float = "5p",
+):
     """Run the LTspice simulation using a fixed op-amp test netlist.
 
     Parameters
@@ -16,6 +22,14 @@ def run_simulation(lib_path: str | None = None):
         Optional path to the ``LM7171.lib`` model file. When provided, the
         ``.include`` statement in the generated netlist will reference this
         absolute path. Otherwise the short file name ``lm7171.lib`` is used.
+    r9_value:
+        Value of the gain resistor ``R9``.
+    r1_value:
+        Value of the input resistor ``R1``.
+    r3_value:
+        Value of the load resistor ``R3``.
+    c1_value:
+        Value of the feedback capacitor ``C1``.
     """
 
     # --- 1. Define the Netlist Content ---
@@ -32,12 +46,12 @@ def run_simulation(lib_path: str | None = None):
         "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
         "V4 VCC 0 12",
         "V5 -VCC 0 -12",
-        "R9 Vout N001 1k",
+        f"R9 Vout N001 {r9_value}",
         "XU2 N003 N001 VCC -VCC Vout LM7171",
-        "R3 Vout 0 1K",
+        f"R3 Vout 0 {r3_value}",
         "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
-        "R1 N003 N002 500",
-        "C1 Vout N001 5p",
+        f"R1 N003 N002 {r1_value}",
+        f"C1 Vout N001 {c1_value}",
         include_line,
         "* .ac dec 100 1K 20000K",
         ".tran 5u",
