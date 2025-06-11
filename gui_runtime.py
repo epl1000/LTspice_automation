@@ -34,7 +34,19 @@ def main():
     tk.Label(spinner_frame, text="R9 (Gain Ω)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="C1 (F)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
-    tk.Spinbox(spinner_frame, from_=1e-12, to=1e-6, increment=1e-12, textvariable=c1_var, width=8, format="%.2e").grid(row=0, column=3, padx=5, pady=2)
+    # Tk's Spinbox widget does not reliably support the "e" format specifier
+    # across platforms.  Using it on some Tcl/Tk versions results in a
+    # ``TclError: bad spinbox format specifier".  Simply omit the ``format``
+    # argument and let Tk handle the numeric string representation so the GUI
+    # works on all systems.
+    tk.Spinbox(
+        spinner_frame,
+        from_=1e-12,
+        to=1e-6,
+        increment=1e-12,
+        textvariable=c1_var,
+        width=8,
+    ).grid(row=0, column=3, padx=5, pady=2)
 
     tk.Label(spinner_frame, text="R1 (Input Ω)").grid(row=1, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r1_var, width=8).grid(row=1, column=1, padx=5, pady=2)
