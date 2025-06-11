@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 import pyltspicetest1
 
+# Spinner constants
+ONE_PF = 1e-12
+
 
 def main():
     root = tk.Tk()
@@ -42,9 +45,9 @@ def main():
     # works on all systems.
     tk.Spinbox(
         spinner_frame,
-        from_=1e-12,
+        from_=ONE_PF,
         to=1e-6,
-        increment=1e-12,
+        increment=ONE_PF,
         textvariable=c1_var,
         width=8,
     ).grid(row=0, column=3, padx=5, pady=2)
