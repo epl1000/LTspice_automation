@@ -129,15 +129,29 @@ def main():
     run_frame = tk.Frame(controls)
     run_frame.grid(row=0, column=1, padx=5, pady=0, sticky="w")
 
-    run_button = tk.Button(run_frame, text="RUN", command=run_simulation)
+    run_button = tk.Button(
+        run_frame,
+        text="RUN",
+        command=run_simulation,
+        width=10,
+    )
     run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
-    tk.Label(run_frame, textvariable=model_label_var).grid(
-        row=0, column=1, padx=5, pady=0, sticky="w"
+    load_button = tk.Button(
+        run_frame,
+        text="Load Model",
+        command=load_model,
+        width=10,
     )
-
-    load_button = tk.Button(run_frame, text="Load Model", command=load_model)
     load_button.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+
+    tk.Label(run_frame, textvariable=model_label_var).grid(
+        row=1,
+        column=1,
+        padx=5,
+        pady=2,
+        sticky="w",
+    )
 
     root.mainloop()
 
