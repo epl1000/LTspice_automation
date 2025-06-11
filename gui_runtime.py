@@ -115,6 +115,9 @@ def main():
             pass
         update_model_label()
 
+    slew_label_var = tk.StringVar()
+    settling_label_var = tk.StringVar()
+
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
@@ -126,7 +129,7 @@ def main():
             return
 
         try:
-            time_wave, v_cap_wave = pyltspicetest1.run_simulation(
+            time_wave, v_cap_wave, slew_rate, settling_time = pyltspicetest1.run_simulation(
                 current_model,
                 r9_var.get(),
                 r1_var.get(),
@@ -145,6 +148,9 @@ def main():
         ax.grid(True)
         canvas.draw()
 
+        slew_label_var.set(f"90-10 Slew Rate: {slew_rate/1e6:.3f} V/us")
+        settling_label_var.set(f"Settling Time: {settling_time * 1e6:.3f} us")
+
     run_frame = tk.Frame(controls)
     run_frame.grid(row=0, column=1, padx=5, pady=0, sticky="w")
 
@@ -155,6 +161,22 @@ def main():
         width=10,
     )
     run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
+
+    tk.Label(run_frame, textvariable=slew_label_var).grid(
+        row=0,
+        column=1,
+        padx=5,
+        pady=2,
+        sticky="w",
+    )
+
+    tk.Label(run_frame, textvariable=settling_label_var).grid(
+        row=0,
+        column=2,
+        padx=5,
+        pady=2,
+        sticky="w",
+    )
 
     load_button = tk.Button(
         run_frame,
