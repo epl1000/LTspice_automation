@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 def run_simulation(
     lib_path: str | None = None,
     r9_value: str | float = "1k",
-    r1_value: str | float = "500",
+    r1_value: str | float = "1k",
     r3_value: str | float = "1k",
     c1_value: str | float = "5p",
 ):
@@ -47,10 +47,10 @@ def run_simulation(
         "V4 VCC 0 12",
         "V5 -VCC 0 -12",
         f"R9 Vout N001 {r9_value}",
-        "XU2 N003 N001 VCC -VCC Vout LM7171",
+        "XU2 N002 N001 VCC -VCC Vout LM7171",
         f"R3 Vout 0 {r3_value}",
         "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
-        f"R1 N003 N002 {r1_value}",
+        f"R1 N001 0 {r1_value}",
         f"C1 Vout N001 {c1_value}",
         include_line,
         "* .ac dec 100 1K 20000K",
