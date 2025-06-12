@@ -31,6 +31,8 @@ def run_simulation(
     r1_value: str | float = "1k",
     r3_value: str | float = "1k",
     c1_value: str | float = "5p",
+    c2_value: str | float = "2p",
+    c3_value: str | float = "2p",
 ):
     """Run the LTspice simulation using a fixed op-amp test netlist.
 
@@ -49,6 +51,10 @@ def run_simulation(
         Value of the load resistor ``R3``.
     c1_value:
         Value of the feedback capacitor ``C1``.
+    c2_value:
+        Value of the input capacitor ``C2``.
+    c3_value:
+        Value of the load capacitor ``C3``.
 
     Returns
     -------
@@ -82,6 +88,8 @@ def run_simulation(
         "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
         f"R1 N001 0 {r1_value}",
         f"C1 Vout N001 {c1_value}",
+        f"C2 N002 0 {c2_value}",
+        f"C3 Vout 0 {c3_value}",
         include_line,
         "* .ac dec 100 1K 20000K",
         ".tran 5u",
