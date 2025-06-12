@@ -70,7 +70,7 @@ def main():
         )
     c1_spinbox.grid(row=0, column=3, padx=5, pady=2)
 
-    tk.Label(spinner_frame, text="C2 (F)").grid(row=0, column=4, padx=5, pady=2, sticky="w")
+    tk.Label(spinner_frame, text="C input").grid(row=0, column=4, padx=5, pady=2, sticky="w")
     try:
         c2_spinbox = tk.Spinbox(
             spinner_frame,
@@ -97,7 +97,7 @@ def main():
     tk.Label(spinner_frame, text="R3 (Load Ω)").grid(row=1, column=2, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r3_var, width=8).grid(row=1, column=3, padx=5, pady=2)
 
-    tk.Label(spinner_frame, text="C3 (F)").grid(row=1, column=4, padx=5, pady=2, sticky="w")
+    tk.Label(spinner_frame, text="C load").grid(row=1, column=4, padx=5, pady=2, sticky="w")
     try:
         c3_spinbox = tk.Spinbox(
             spinner_frame,
