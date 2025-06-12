@@ -37,7 +37,7 @@ def main():
     c2_var = tk.DoubleVar(value=2e-12)
     c3_var = tk.DoubleVar(value=2e-12)
 
-    tk.Label(spinner_frame, text="R9 (Gain Ω)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
+    tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="C1 (F)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
     # The default Spinbox ``format`` uses ``%f`` with six decimal digits.  With
@@ -92,7 +92,7 @@ def main():
         )
     c2_spinbox.grid(row=0, column=5, padx=5, pady=2)
 
-    tk.Label(spinner_frame, text="R1 (Input Ω)").grid(row=1, column=0, padx=5, pady=2, sticky="w")
+    tk.Label(spinner_frame, text="R1").grid(row=1, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r1_var, width=8).grid(row=1, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="R3 (Load Ω)").grid(row=1, column=2, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r3_var, width=8).grid(row=1, column=3, padx=5, pady=2)
