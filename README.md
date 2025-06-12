@@ -35,9 +35,12 @@ If the model path is omitted, `LM7171.lib` is used.
 ### Using the GUI
 
 Run the `gui_runtime.py` script to open a small window with a **RUN** button
-and a **Load Model** button. Four spin boxes allow you to set the values of the
-gain resistor (`R9`), input resistor (`R1`), load resistor (`R3`), and feedback
-capacitor (`C1`). The C1 spin box increments in 1&nbsp;pF steps.
+and a **Load Model** button. Six spin boxes allow you to set the values of the
+gain resistor (`R9`), input resistor (`R1`), load resistor (`R3`), feedback
+capacitor (`C1`), input capacitor (`C2`), and load capacitor (`C3`). The
+capacitor spin boxes increment in 1&nbsp;pF steps.
+The `C2` and `C3` controls appear to the right of the `C1` and `R3` pair, stacked
+vertically, with the **RUN** and **Load Model** buttons on their right.
 
 Click **Load Model** to select the op-amp model file. The selected file is
 remembered across runs and its name is displayed to the right of the **RUN**
