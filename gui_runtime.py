@@ -39,7 +39,7 @@ def main():
 
     tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
-    tk.Label(spinner_frame, text="C1 (F)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
+    tk.Label(spinner_frame, text="C1 (FB)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
     # The default Spinbox ``format`` uses ``%f`` with six decimal digits.  With
     # the picofarad values used for C1 this results in all values being rendered
     # as ``0.000000`` so it appears as if the widget does not change when the
