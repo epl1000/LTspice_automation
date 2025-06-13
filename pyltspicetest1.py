@@ -51,19 +51,26 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
 
     d = schemdraw.Drawing(show=False)
 
-    # Input source and reference ground
+    # Input source V1 with its ground reference
     d += elm.Ground()
+    ground_start = d.here
     d += elm.SourceV().up().label("V1")
     source_top = d.here
 
-    # Bypass capacitor close to the source
-    d += elm.Capacitor().at(source_top).down().label("C2")
+    # Place C2 to the right of V1, sharing the same ground
+    d += elm.Line().at(ground_start).right()
     d += elm.Ground()
+    d += elm.Capacitor().up().label("C2")
+    c2_top = d.here
 
-    d += elm.Line().right()
+    # Tie the tops of V1 and C2 together
+    d += elm.Line().at(c2_top).to(source_top)
+
+    # Place the op-amp to the right and connect the shared node
+    d += elm.Line().at(source_top).right()
     op = d.add(elm.Opamp().right())
 
-    # Connect V1 directly to the non-inverting input
+    # Connect the common node to the non-inverting input
     d += elm.Line().at(source_top).to(op.in1)
 
     # Inverting input network (N001)
