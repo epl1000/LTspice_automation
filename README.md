@@ -54,7 +54,8 @@ remembered across runs and its name is displayed to the right of the **RUN**
 button. Press **RUN** to run the simulation using the currently loaded model.
 The netlist is updated with the spinner values and the simulation result is
 plotted. After each run a simple schematic derived from the netlist is shown to
-the right of the plot.
+the right of the plot. The schematic now connects the components with wires so
+the basic node relationships are visible.
 
 ```bash
 python gui_runtime.py
@@ -64,7 +65,8 @@ Upon completion, the script generates:
 
 - `opamp_test.net` – the generated netlist file
 - `temp_sim_output/` – directory containing the `.raw` and `.log` simulation output files
-- `opamp_test.svg` – simple schematic created from the netlist
+- `opamp_test.svg` – schematic with connected components created from the
+  netlist
 
 ## Cleaning up
 

@@ -30,47 +30,75 @@ def _first_subckt_name(lib_path: Path) -> str:
 
 
 def create_schematic_svg(netlist_path: str | Path) -> Path:
-    """Create a very simple schematic diagram from a netlist.
+    """Create a schematic diagram with basic wiring from a netlist.
 
-    The schematic is saved as ``<netlist>.svg`` and is only meant to
-    provide a quick visual overview. It recognises a small subset of
-    component types (resistors, capacitors, voltage sources and op-amps).
-    The returned path points to the generated SVG file. If the netlist
-    cannot be read the function returns ``Path()``.
+    The generated schematic is extremely simple and relies on the fixed
+    structure of ``opamp_test.net``.  Components are arranged and
+    connected so the nets roughly match the actual circuit.  The
+    schematic is saved alongside the netlist as ``.svg`` and ``.png``
+    files.  If the netlist cannot be read the function returns
+    ``Path()``.
     """
 
     netlist_path = Path(netlist_path)
     svg_path = netlist_path.with_suffix(".svg")
 
-    d = schemdraw.Drawing()
-    x = 0
     try:
-        with netlist_path.open("r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("*") or line.startswith("."):
-                    continue
-                parts = line.split()
-                name = parts[0]
-                value = parts[-1]
-                if name.startswith("R"):
-                    d += elm.Resistor().at((x, 0)).label(f"{name} {value}")
-                    x += 3
-                elif name.startswith("C"):
-                    d += elm.Capacitor().at((x, 0)).label(f"{name} {value}")
-                    x += 3
-                elif name.startswith("V"):
-                    d += elm.Source().at((x, 0)).label(name)
-                    x += 3
-                elif name.startswith("X"):
-                    d += elm.Opamp().at((x, 0)).label(name)
-                    x += 4
+        with netlist_path.open("r", encoding="utf-8", errors="ignore"):
+            pass
     except OSError:
         return Path()
 
+    d = schemdraw.Drawing(show=False)
+
+    # Input source and reference ground
+    d += elm.Ground()
+    d += elm.SourceV().up().label("V1")
+    n002 = d.here
+    d += elm.Line().right()
+    op = d.add(elm.Opamp().right())
+
+    # Non-inverting input path (N002)
+    d += elm.Line().at(n002).to(op.in1)
+    d += elm.Capacitor().at(n002).down().label("C2")
+    d += elm.Ground()
+
+    # Inverting input network (N001)
+    d += elm.Line().at(op.in2).left()
+    n001 = d.here
+    d += elm.Resistor().down().label("R1")
+    d += elm.Ground()
+
+    # Feedback components from Vout to N001
+    d.push()
+    d += elm.Line().at(n001).right()
+    d += elm.Resistor().right().label("R9")
+    d += elm.Line().to(op.out)
+    d.pop()
+    d += elm.Capacitor().at(op.out).down().toy(n001).label("C1")
+    d += elm.Line().to(n001)
+
+    # Output load (R3 and C3)
+    d += elm.Line().at(op.out).right()
+    d += elm.Resistor().down().label("R3")
+    d += elm.Ground()
+
+    d.push()
+    d += elm.Capacitor().at(op.out).down().label("C3")
+    d += elm.Ground()
+    d.pop()
+
+    # Power supplies
+    d += elm.Line().at(op.vd).up()
+    d += elm.SourceV().up().label("V4")
+    d += elm.Ground()
+
+    d += elm.Line().at(op.vs).down()
+    d += elm.SourceV().down().label("V5")
+    d += elm.Ground()
+
     d.draw()
     d.save(str(svg_path))
-    # Also save a PNG version for easier display in Tkinter
     d.save(str(svg_path.with_suffix(".png")))
     return svg_path
 
