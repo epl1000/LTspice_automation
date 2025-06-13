@@ -80,10 +80,10 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
     d += elm.Line().at(n001_top).right()
     d += elm.Resistor().right().label("R9")
     r9_end = d.here
-    d += elm.Line().down().to(op.out)
+    d += elm.Line().at(r9_end).to(op.out)
 
-    # Feedback capacitor C1 horizontally above R9
-    d += elm.Line().at(n001_top).up()
+    # Feedback capacitor C1 from op-amp output
+    d += elm.Line().at(op.out).up()
     d += elm.Capacitor().right().label("C1")
     d += elm.Line().down().to(r9_end)
 
@@ -97,14 +97,6 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
     d += elm.Ground()
     d.pop()
 
-    # Power supplies
-    d += elm.Line().at(op.vd).up()
-    d += elm.SourceV().up().label("V4")
-    d += elm.Ground()
-
-    d += elm.Line().at(op.vs).down()
-    d += elm.SourceV().down().label("V5")
-    d += elm.Ground()
 
     d.draw()
     d.save(str(svg_path))
