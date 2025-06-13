@@ -54,14 +54,17 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
     # Input source and reference ground
     d += elm.Ground()
     d += elm.SourceV().up().label("V1")
-    n002 = d.here
+    source_top = d.here
     d += elm.Line().right()
     op = d.add(elm.Opamp().right())
 
     # Non-inverting input path (N002)
-    d += elm.Line().at(n002).to(op.in1)
+    d += elm.Line().at(source_top).right()
+    n002 = d.here
+    d += elm.Line().at(source_top).to(n002)
     d += elm.Capacitor().at(n002).down().label("C2")
     d += elm.Ground()
+    d += elm.Line().at(n002).to(op.in1)
 
     # Inverting input network (N001)
     d += elm.Line().at(op.in2).left()
