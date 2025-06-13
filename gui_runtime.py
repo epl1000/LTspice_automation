@@ -141,11 +141,17 @@ def main():
         width=8,
     ).grid(row=1, column=7, padx=5, pady=2)
 
+    display_frame = tk.Frame(root)
+    display_frame.pack(fill=tk.BOTH, expand=True)
+
     figure = plt.Figure(figsize=(5, 4), dpi=100)
     ax = figure.add_subplot(111)
-    canvas = FigureCanvasTkAgg(figure, master=root)
+    canvas = FigureCanvasTkAgg(figure, master=display_frame)
     canvas_widget = canvas.get_tk_widget()
-    canvas_widget.pack(fill=tk.BOTH, expand=True)
+    canvas_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    schematic_label = tk.Label(display_frame)
+    schematic_label.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
     last_model_file = "last_model.txt"
 
@@ -220,6 +226,15 @@ def main():
         ax.set_ylabel("Voltage (V)")
         ax.grid(True)
         canvas.draw()
+
+        try:
+            svg_path = pyltspicetest1.create_schematic_svg("opamp_test.net")
+            png_path = svg_path.with_suffix(".png")
+            img = tk.PhotoImage(file=str(png_path))
+            schematic_label.configure(image=img)
+            schematic_label.image = img
+        except Exception:
+            schematic_label.configure(text="Schematic unavailable")
 
         slew_label_var.set(f"90-10 Slew Rate: {sr_90_10/1e6:.3f} V/us")
         slew80_label_var.set(f"80-20 Slew Rate: {sr_80_20/1e6:.3f} V/us")
