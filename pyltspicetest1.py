@@ -30,87 +30,78 @@ def _first_subckt_name(lib_path: Path) -> str:
 
 
 def create_schematic_svg(netlist_path: str | Path) -> Path:
-    """Create a schematic diagram with basic wiring from a netlist.
-
-    The generated schematic is extremely simple and relies on the fixed
-    structure of ``opamp_test.net``.  Components are arranged and
-    connected so the nets roughly match the actual circuit.  The
-    schematic is saved alongside the netlist as ``.svg`` and ``.png``
-    files.  If the netlist cannot be read the function returns
-    ``Path()``.
-    """
+    """Render a small schematic reflecting the LTspice netlist topology."""
 
     netlist_path = Path(netlist_path)
     svg_path = netlist_path.with_suffix(".svg")
 
-    try:
-        with netlist_path.open("r", encoding="utf-8", errors="ignore"):
-            pass
-    except OSError:
-        return Path()
-
+    # ─── start drawing ──────────────────────────
     d = schemdraw.Drawing(show=False)
 
-    # Input source V1 with its ground reference
-    d += elm.Ground()
-    ground_start = d.here
-    d += elm.SourceV().up().label("V1")
-    source_top = d.here
+    # ── Signal source and reference node (non‑inverting input path) ──
+    gnd = d.add(elm.Ground())
+    src = d.add(elm.SourceV().up().label("V1"))
+    vp = d.here
 
-    # Place C2 to the right of V1, sharing the same ground
-    d += elm.Line().at(ground_start).right()
-    d += elm.Ground()
-    d += elm.Capacitor().up().label("C2")
-    c2_top = d.here
-
-    # Tie the tops of V1 and C2 together
-    d += elm.Line().at(c2_top).to(source_top)
-
-    # Place the op-amp to the right and connect the shared node
-    d += elm.Line().at(source_top).right()
-    op = d.add(elm.Opamp().right())
-
-    # Connect the common node to the non-inverting input
-    d += elm.Line().at(source_top).to(op.in1)
-
-    # Inverting input network (N001)
-    d += elm.Line().at(op.in2).left()
-    n001 = d.here
-
-    # Raise the node above the op-amp to place R1, R9 and C1 horizontally
-    d += elm.Line().up()
-    n001_top = d.here
-
-    # R1 to ground, placed horizontally and left of R9
-    d += elm.Resistor().left().label("R1")
-    d += elm.Line().down()
-    d += elm.Ground()
-
-    # Feedback network above the op-amp: R9 with C1 in parallel
-    d += elm.Line().at(n001_top).right()
-    r9_start = d.here
-    d += elm.Resistor().right().label("R9")
-    r9_end = d.here
-    d += elm.Line().at(r9_end).to(op.out)
-
-    # Capacitor C1 connected across R9 directly above it
+    # Capacitor C2 from that node to ground
     d.push()
-    d += elm.Line().at(r9_start).up()
-    d += elm.Capacitor().right().label("C1")
-    d += elm.Line().down().to(r9_end)
+    d.add(elm.Capacitor().right().down().label("C2"))
+    d.add(elm.Ground())
     d.pop()
 
-    # Output load (R3 and C3)
-    d += elm.Line().at(op.out).right()
-    d += elm.Resistor().down().label("R3")
-    d += elm.Ground()
+    # Route the node horizontally towards the op‑amp location
+    d.add(elm.Line().right(1.5))
+    node_plus = d.here
 
+    # ── LM7171 op‑amp – plus input = in2 (lower), minus input = in1 (upper) ──
+    op = d.add(elm.Opamp().at(node_plus).right())
+
+    # Connect non‑inverting (+) input
+    d.add(elm.Line().at(vp).to(op.in2))
+
+    # ── Inverting (–) input network ────────────────────
+    d.add(elm.Line().at(op.in1).left())
+    n_inv = d.here
+
+    # R1 to ground
     d.push()
-    d += elm.Capacitor().at(op.out).down().label("C3")
-    d += elm.Ground()
+    d.add(elm.Resistor().down().label("R1"))
+    d.add(elm.Ground())
     d.pop()
 
+    # Lift that node so R9 and C1 can sit above the op‑amp
+    d.add(elm.Line().up(1.5))
+    fb_left = d.here
 
+    # R9 in series, heading right towards Vout
+    r9 = d.add(elm.Resistor().right().label("R9"))
+    fb_right = d.here
+
+    # Down to the op‑amp output
+    d.add(elm.Line().down().to(op.out))
+
+    # C1 in parallel with R9
+    d.push()
+    d.add(elm.Line().at(fb_left).up())
+    d.add(elm.Capacitor().right().label("C1"))
+    d.add(elm.Line().down().to(fb_right))
+    d.pop()
+
+    # ── Output load (R3) and snubber cap (C3) ─────────────
+    d.add(elm.Line().at(op.out).right(1))
+    vout = d.here
+
+    d.add(elm.Resistor().down().label("R3"))
+    d.add(elm.Ground())
+
+    # Small stub to the right before dropping C3
+    d.push()
+    d.add(elm.Line().at(vout).right(1))
+    d.add(elm.Capacitor().down().label("C3"))
+    d.add(elm.Ground())
+    d.pop()
+
+    # ── Finish up ──────────────────────────────
     d.draw()
     d.save(str(svg_path))
     d.save(str(svg_path.with_suffix(".png")))
