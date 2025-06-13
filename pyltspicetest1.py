@@ -66,17 +66,26 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
     # Inverting input network (N001)
     d += elm.Line().at(op.in2).left()
     n001 = d.here
-    d += elm.Resistor().down().label("R1")
+
+    # Raise the node above the op-amp to place R1, R9 and C1 horizontally
+    d += elm.Line().up()
+    n001_top = d.here
+
+    # R1 to ground, placed horizontally and left of R9
+    d += elm.Resistor().left().label("R1")
+    d += elm.Line().down()
     d += elm.Ground()
 
-    # Feedback components from Vout to N001
-    d.push()
-    d += elm.Line().at(n001).right()
+    # Feedback resistor R9 above the op-amp
+    d += elm.Line().at(n001_top).right()
     d += elm.Resistor().right().label("R9")
-    d += elm.Line().to(op.out)
-    d.pop()
-    d += elm.Capacitor().at(op.out).down().toy(n001).label("C1")
-    d += elm.Line().to(n001)
+    r9_end = d.here
+    d += elm.Line().down().to(op.out)
+
+    # Feedback capacitor C1 horizontally above R9
+    d += elm.Line().at(n001_top).up()
+    d += elm.Capacitor().right().label("C1")
+    d += elm.Line().down().to(r9_end)
 
     # Output load (R3 and C3)
     d += elm.Line().at(op.out).right()
