@@ -33,6 +33,8 @@ def run_simulation(
     c1_value: str | float = "5p",
     c2_value: str | float = "2p",
     c3_value: str | float = "2p",
+    v1_amplitude: str | float = 1.0,
+    v1_frequency: str | float = 5e5,
 ):
     """Run the LTspice simulation using a fixed op-amp test netlist.
 
@@ -55,6 +57,10 @@ def run_simulation(
         Value of the input capacitor ``C2``.
     c3_value:
         Value of the load capacitor ``C3``.
+    v1_amplitude:
+        Peak value of the input pulse source ``V1`` in volts.
+    v1_frequency:
+        Frequency of the input pulse source ``V1`` in hertz.
 
     Returns
     -------
@@ -78,6 +84,9 @@ def run_simulation(
     except Exception:
         subckt_name = "LM7171"
 
+    period = 1 / float(v1_frequency)
+    ton = period / 2
+
     netlist_lines = [
         "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
         "V4 VCC 0 12",
@@ -85,7 +94,7 @@ def run_simulation(
         f"R9 Vout N001 {r9_value}",
         f"XU2 N002 N001 VCC -VCC Vout {subckt_name}",
         f"R3 Vout 0 {r3_value}",
-        "V1 N002 0 PULSE(0 1 0 1n 1n 1u 2u)",
+        f"V1 N002 0 PULSE(0 {v1_amplitude} 0 1n 1n {ton} {period})",
         f"R1 N001 0 {r1_value}",
         f"C1 Vout N001 {c1_value}",
         f"C2 N002 0 {c2_value}",

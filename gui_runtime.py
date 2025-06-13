@@ -36,6 +36,8 @@ def main():
     c1_var = tk.DoubleVar(value=5e-12)
     c2_var = tk.DoubleVar(value=2e-12)
     c3_var = tk.DoubleVar(value=2e-12)
+    v1_amp_var = tk.DoubleVar(value=1.0)
+    v1_freq_var = tk.DoubleVar(value=5e5)
 
     tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
@@ -119,6 +121,26 @@ def main():
         )
     c3_spinbox.grid(row=1, column=5, padx=5, pady=2)
 
+    tk.Label(spinner_frame, text="V1 Amp").grid(row=0, column=6, padx=5, pady=2, sticky="w")
+    tk.Spinbox(
+        spinner_frame,
+        from_=0.0,
+        to=10.0,
+        increment=0.1,
+        textvariable=v1_amp_var,
+        width=8,
+    ).grid(row=0, column=7, padx=5, pady=2)
+
+    tk.Label(spinner_frame, text="V1 Freq (Hz)").grid(row=1, column=6, padx=5, pady=2, sticky="w")
+    tk.Spinbox(
+        spinner_frame,
+        from_=1.0,
+        to=1e7,
+        increment=1000.0,
+        textvariable=v1_freq_var,
+        width=8,
+    ).grid(row=1, column=7, padx=5, pady=2)
+
     figure = plt.Figure(figsize=(5, 4), dpi=100)
     ax = figure.add_subplot(111)
     canvas = FigureCanvasTkAgg(figure, master=root)
@@ -184,6 +206,8 @@ def main():
                 c1_var.get(),
                 c2_var.get(),
                 c3_var.get(),
+                v1_amp_var.get(),
+                v1_freq_var.get(),
             )
         except Exception as exc:
             messagebox.showerror("Error", f"Simulation failed: {exc}")
