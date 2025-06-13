@@ -7,6 +7,10 @@ import textwrap
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Optional dependency used to create a simple schematic
+import schemdraw
+from schemdraw import elements as elm
+
 
 def _first_subckt_name(lib_path: Path) -> str:
     """Return the name of the first subcircuit defined in a SPICE library."""
@@ -23,6 +27,52 @@ def _first_subckt_name(lib_path: Path) -> str:
         pass
 
     raise ValueError(f"Could not determine subcircuit name from {lib_path}")
+
+
+def create_schematic_svg(netlist_path: str | Path) -> Path:
+    """Create a very simple schematic diagram from a netlist.
+
+    The schematic is saved as ``<netlist>.svg`` and is only meant to
+    provide a quick visual overview. It recognises a small subset of
+    component types (resistors, capacitors, voltage sources and op-amps).
+    The returned path points to the generated SVG file. If the netlist
+    cannot be read the function returns ``Path()``.
+    """
+
+    netlist_path = Path(netlist_path)
+    svg_path = netlist_path.with_suffix(".svg")
+
+    d = schemdraw.Drawing()
+    x = 0
+    try:
+        with netlist_path.open("r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("*") or line.startswith("."):
+                    continue
+                parts = line.split()
+                name = parts[0]
+                value = parts[-1]
+                if name.startswith("R"):
+                    d += elm.Resistor().at((x, 0)).label(f"{name} {value}")
+                    x += 3
+                elif name.startswith("C"):
+                    d += elm.Capacitor().at((x, 0)).label(f"{name} {value}")
+                    x += 3
+                elif name.startswith("V"):
+                    d += elm.Source().at((x, 0)).label(name)
+                    x += 3
+                elif name.startswith("X"):
+                    d += elm.Opamp().at((x, 0)).label(name)
+                    x += 4
+    except OSError:
+        return Path()
+
+    d.draw()
+    d.save(str(svg_path))
+    # Also save a PNG version for easier display in Tkinter
+    d.save(str(svg_path.with_suffix(".png")))
+    return svg_path
 
 
 def run_simulation(
