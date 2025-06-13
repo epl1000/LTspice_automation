@@ -76,16 +76,19 @@ def create_schematic_svg(netlist_path: str | Path) -> Path:
     d += elm.Line().down()
     d += elm.Ground()
 
-    # Feedback resistor R9 above the op-amp
+    # Feedback network above the op-amp: R9 with C1 in parallel
     d += elm.Line().at(n001_top).right()
+    r9_start = d.here
     d += elm.Resistor().right().label("R9")
     r9_end = d.here
     d += elm.Line().at(r9_end).to(op.out)
 
-    # Feedback capacitor C1 from op-amp output
-    d += elm.Line().at(op.out).up()
+    # Capacitor C1 connected across R9 directly above it
+    d.push()
+    d += elm.Line().at(r9_start).up()
     d += elm.Capacitor().right().label("C1")
     d += elm.Line().down().to(r9_end)
+    d.pop()
 
     # Output load (R3 and C3)
     d += elm.Line().at(op.out).right()
