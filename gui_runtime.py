@@ -16,13 +16,16 @@ def main():
     root = tk.Tk()
     root.title("LTspice Runtime")
 
-    # Configure window size: keep full screen height but half the width
+    # Configure window size: allocate at least half the screen width and at
+    # least 1024 pixels so the results area has ample space at startup
+    min_width = 1024
     try:
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        root.geometry(f"{screen_width // 2}x{screen_height}")
+        min_width = max(screen_width // 2, min_width)
+        root.geometry(f"{min_width}x{screen_height}")
     except tk.TclError:
-        root.geometry("400x600")
+        root.geometry(f"{min_width}x600")
 
     controls = tk.Frame(root)
     controls.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
@@ -215,7 +218,8 @@ def main():
         canvas_width = canvas_widget.winfo_width() or int(
             figure.get_figwidth() * figure.get_dpi()
         )
-        new_width = canvas_width + img_width + 20
+        # Ensure the window never becomes smaller than the initial minimum width
+        new_width = max(canvas_width + img_width + 20, min_width)
         current_height = root.winfo_height()
         root.geometry(f"{new_width}x{current_height}")
 
