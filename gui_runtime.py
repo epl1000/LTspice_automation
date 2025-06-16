@@ -188,32 +188,36 @@ def main():
             pass
 
     def update_schematic_image() -> None:
-        """Display the current default image or a placeholder."""
-
-        img_size = 200
+        """Display the current default image at natural size or a placeholder."""
 
         if default_image_path and Path(default_image_path).exists():
             try:
                 img = Image.open(default_image_path)
-                img.thumbnail((img_size, img_size), Image.LANCZOS)
-                base = Image.new("RGB", (img_size, img_size), "white")
-                base.paste(
-                    img,
-                    ((img_size - img.width) // 2, (img_size - img.height) // 2),
-                )
             except Exception:
                 img = None
         else:
             img = None
 
         if img is None:
+            img_size = 200
             img = Image.new("RGB", (img_size, img_size), "white")
             draw = ImageDraw.Draw(img)
             draw.ellipse((10, 10, img_size - 10, img_size - 10), fill="red")
 
+        img_width, img_height = img.size
+
         tk_img = ImageTk.PhotoImage(img)
         schematic_label.configure(image=tk_img)
         schematic_label.image = tk_img
+
+        # Resize the window so the image is shown at its natural size
+        root.update_idletasks()
+        canvas_width = canvas_widget.winfo_width() or int(
+            figure.get_figwidth() * figure.get_dpi()
+        )
+        new_width = canvas_width + img_width + 20
+        current_height = root.winfo_height()
+        root.geometry(f"{new_width}x{current_height}")
 
     def choose_default_image(event=None):
         """Prompt for an image to use as the default schematic."""
