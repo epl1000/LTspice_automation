@@ -305,13 +305,8 @@ def main():
     schematic_label.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
     last_model_file = "last_model.txt"
-    default_image_file = "default_image.txt"
 
-    try:
-        with open(default_image_file, "r", encoding="utf-8") as f:
-            default_image_path = f.read().strip()
-    except FileNotFoundError:
-        default_image_path = ""
+    default_image_path = ""
 
 
     try:
@@ -328,14 +323,6 @@ def main():
         model_label_var.set(f"OP AMP MODEL: {name}")
 
     update_model_label()
-
-    def save_default_image(path: str) -> None:
-        """Persist the path of the chosen default image."""
-        try:
-            with open(default_image_file, "w", encoding="utf-8") as f:
-                f.write(path)
-        except OSError:
-            pass
 
     def update_schematic_image() -> None:
         """Display the current default image at natural size or a placeholder."""
@@ -386,7 +373,6 @@ def main():
             return
 
         default_image_path = path
-        save_default_image(default_image_path)
         update_schematic_image()
 
     schematic_label.bind("<Button-1>", choose_default_image)
