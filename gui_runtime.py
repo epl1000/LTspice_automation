@@ -155,6 +155,14 @@ def main():
     schematic_label.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
     last_model_file = "last_model.txt"
+    default_image_file = "default_image.txt"
+
+    try:
+        with open(default_image_file, "r", encoding="utf-8") as f:
+            default_image_path = f.read().strip()
+    except FileNotFoundError:
+        default_image_path = ""
+
 
     try:
         with open(last_model_file, "r", encoding="utf-8") as f:
@@ -170,6 +178,64 @@ def main():
         model_label_var.set(f"OP AMP MODEL: {name}")
 
     update_model_label()
+
+    def save_default_image(path: str) -> None:
+        """Persist the path of the chosen default image."""
+        try:
+            with open(default_image_file, "w", encoding="utf-8") as f:
+                f.write(path)
+        except OSError:
+            pass
+
+    def update_schematic_image() -> None:
+        """Display the current default image or a placeholder."""
+
+        img_size = 200
+
+        if default_image_path and Path(default_image_path).exists():
+            try:
+                img = Image.open(default_image_path)
+                img.thumbnail((img_size, img_size), Image.LANCZOS)
+                base = Image.new("RGB", (img_size, img_size), "white")
+                base.paste(
+                    img,
+                    ((img_size - img.width) // 2, (img_size - img.height) // 2),
+                )
+            except Exception:
+                img = None
+        else:
+            img = None
+
+        if img is None:
+            img = Image.new("RGB", (img_size, img_size), "white")
+            draw = ImageDraw.Draw(img)
+            draw.ellipse((10, 10, img_size - 10, img_size - 10), fill="red")
+
+        tk_img = ImageTk.PhotoImage(img)
+        schematic_label.configure(image=tk_img)
+        schematic_label.image = tk_img
+
+    def choose_default_image(event=None):
+        """Prompt for an image to use as the default schematic."""
+
+        nonlocal default_image_path
+
+        path = filedialog.askopenfilename(
+            title="Select image",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tif *.tiff"),
+                ("All files", "*.*"),
+            ],
+        )
+        if not path:
+            return
+
+        default_image_path = path
+        save_default_image(default_image_path)
+        update_schematic_image()
+
+    schematic_label.bind("<Button-1>", choose_default_image)
+    update_schematic_image()
 
     def load_model():
         """Prompt for an op-amp model file and remember the selection."""
@@ -228,13 +294,7 @@ def main():
         ax.grid(True)
         canvas.draw()
 
-        img_size = 200
-        img = Image.new("RGB", (img_size, img_size), "white")
-        draw = ImageDraw.Draw(img)
-        draw.ellipse((10, 10, img_size - 10, img_size - 10), fill="red")
-        tk_img = ImageTk.PhotoImage(img)
-        schematic_label.configure(image=tk_img)
-        schematic_label.image = tk_img
+        update_schematic_image()
 
         slew_label_var.set(f"90-10 Slew Rate: {sr_90_10/1e6:.3f} V/us")
         slew80_label_var.set(f"80-20 Slew Rate: {sr_80_20/1e6:.3f} V/us")
