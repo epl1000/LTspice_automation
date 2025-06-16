@@ -190,9 +190,24 @@ def main():
         freq = freq[1:]
         mag_db = mag_db[1:]
 
+        # Limit frequency range from 1 kHz to 200 MHz
+        min_freq = 1e3
+        max_freq = 200e6
+        freq_mask = (freq >= min_freq) & (freq <= max_freq)
+        freq = freq[freq_mask]
+        mag_db = mag_db[freq_mask]
+
+        if len(freq) == 0:
+            messagebox.showinfo(
+                "No data",
+                "No frequency components found between 1 kHz and 200 MHz.",
+            )
+            return
+
         ax.clear()
         ax.plot(freq, mag_db)
         ax.set_xscale("log")
+        ax.set_xlim(min_freq, max_freq)
         ax.set_title("FFT Magnitude")
         ax.set_xlabel("Frequency (Hz)")
         ax.set_ylabel("Magnitude (dB)")
