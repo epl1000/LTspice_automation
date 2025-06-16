@@ -177,7 +177,13 @@ def main():
         ax,
         onselect,
         button=[1],  # Left mouse button only
-        useblit=False,
+        useblit=True,
+        props=dict(
+            facecolor="none",
+            edgecolor="black",
+            linestyle=":",
+            linewidth=1,
+        ),
     )
 
     def reset_zoom(event):
