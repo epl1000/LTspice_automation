@@ -4,6 +4,7 @@ from pathlib import Path
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+from matplotlib.widgets import RectangleSelector
 from PIL import Image, ImageDraw, ImageTk
 
 import pyltspicetest1
@@ -158,6 +159,36 @@ def main():
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+    # Store original limits for zoom reset
+    orig_xlim = [None, None]
+    orig_ylim = [None, None]
+
+    def onselect(eclick, erelease):
+        """Zoom the plot to the rectangle drawn with the left mouse button."""
+        x1, y1 = eclick.xdata, eclick.ydata
+        x2, y2 = erelease.xdata, erelease.ydata
+        if None in (x1, y1, x2, y2):
+            return
+        ax.set_xlim(min(x1, x2), max(x1, x2))
+        ax.set_ylim(min(y1, y2), max(y1, y2))
+        canvas.draw()
+
+    rect_selector = RectangleSelector(
+        ax,
+        onselect,
+        button=[1],  # Left mouse button only
+        useblit=False,
+    )
+
+    def reset_zoom(event):
+        """Reset the plot limits on right-click."""
+        if event.button == 3 and orig_xlim[0] is not None:
+            ax.set_xlim(orig_xlim)
+            ax.set_ylim(orig_ylim)
+            canvas.draw()
+
+    canvas.mpl_connect("button_press_event", reset_zoom)
+
     schematic_label = tk.Label(display_frame)
     schematic_label.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
@@ -275,6 +306,8 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
+        nonlocal orig_xlim, orig_ylim
+
         if not current_model:
             messagebox.showinfo(
                 "No model loaded",
@@ -306,6 +339,10 @@ def main():
         ax.set_ylabel("Voltage (V)")
         ax.grid(True)
         canvas.draw()
+
+        # Remember plot limits for zoom reset
+        orig_xlim[0], orig_xlim[1] = ax.get_xlim()
+        orig_ylim[0], orig_ylim[1] = ax.get_ylim()
 
         update_schematic_image()
 

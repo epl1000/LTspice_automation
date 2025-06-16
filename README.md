@@ -60,6 +60,10 @@ is simply a large red circle acting as a placeholder for a future schematic.
 python gui_runtime.py
 ```
 
+The plot area supports box zooming.  Left-click and drag to draw a rectangle
+around the region of interest.  Release the mouse button to zoom the axes to
+that range.  Right-click inside the plot to reset to the original view.
+
 Upon completion, the script generates:
 
 - `opamp_test.net` – the generated netlist file
