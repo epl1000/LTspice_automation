@@ -18,11 +18,10 @@ pip install PyLTSpice
 ```bash
 pip install matplotlib
 ```
-- The optional package `schemdraw` is required to generate a simple circuit
-  diagram from the netlist:
+- Install the Python package `pillow` for the placeholder image:
 
 ```bash
-pip install schemdraw
+pip install pillow
 ```
 
 ## Running the example
@@ -53,9 +52,8 @@ Click **Load Model** to select the op-amp model file. The selected file is
 remembered across runs and its name is displayed to the right of the **RUN**
 button. Press **RUN** to run the simulation using the currently loaded model.
 The netlist is updated with the spinner values and the simulation result is
-plotted. After each run a simple schematic derived from the netlist is shown to
-the right of the plot. The schematic now connects the components with wires so
-the basic node relationships are visible.
+plotted. After each run a placeholder image showing a red circle is displayed to
+the right of the plot.
 
 ```bash
 python gui_runtime.py
@@ -65,8 +63,7 @@ Upon completion, the script generates:
 
 - `opamp_test.net` – the generated netlist file
 - `temp_sim_output/` – directory containing the `.raw` and `.log` simulation output files
-- `opamp_test.svg` – schematic with connected components created from the
-  netlist
+- `placeholder.png` – simple image containing a red circle
 
 ## Cleaning up
 
