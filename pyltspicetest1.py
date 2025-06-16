@@ -1,6 +1,7 @@
 from PyLTSpice import SpiceEditor, SimRunner, RawRead
 import sys
 import textwrap
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -123,6 +124,21 @@ def run_simulation(freq_hz=1e3, resistor_ohm=1e3, capacitor_f=1e-6, stop_time_s=
         raise ValueError(f"Trace '{trace_name_capacitor_voltage}' not found")
 
 
+def compute_fft(time_wave, voltage_wave):
+    """Compute frequency and amplitude of the FFT for the given signal."""
+    if len(time_wave) < 2:
+        raise ValueError("time_wave must contain at least two samples")
+
+    dt = time_wave[1] - time_wave[0]
+    n = len(time_wave)
+
+    freq = np.fft.rfftfreq(n, dt)
+    fft_vals = np.fft.rfft(voltage_wave)
+    amplitude = np.abs(fft_vals) / n
+
+    return freq, amplitude
+
+
 def main():
     """Run the simulation and display a matplotlib plot."""
 
@@ -138,6 +154,22 @@ def main():
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (V)")
     plt.grid(True)
+    plt.show()
+
+    try:
+        freq, amplitude = compute_fft(time_wave, v_cap_wave)
+    except ValueError as exc:
+        print(f"Error computing FFT: {exc}")
+        sys.exit(1)
+
+    plt.figure()
+    plt.plot(freq, amplitude)
+    plt.title("FFT of Capacitor Voltage")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Amplitude")
+    plt.xscale("log")
+    plt.xlim(1e3, 2e8)
+    plt.grid(True, which="both")
     plt.show()
 
     print("\nBasic PyLTspice example finished.")
