@@ -58,6 +58,7 @@ is simply a large red circle acting as a placeholder for a future schematic.
 
 An **FFT** button next to the `tran` entry computes the Fast Fourier Transform of
 the data currently visible in the plot. When clicked, the FFT magnitude plot
+displays frequencies from 1&nbsp;kHz to 200&nbsp;MHz on a logarithmic scale and
 replaces the time-domain results. Right-clicking inside the FFT plot restores
 the original simulation view.
 
