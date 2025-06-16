@@ -6,6 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
 from PIL import Image, ImageDraw, ImageTk
+import numpy as np
 
 import pyltspicetest1
 
@@ -150,6 +151,53 @@ def main():
     tk.Label(spinner_frame, text="tran").grid(row=2, column=0, padx=5, pady=2, sticky="w")
     tk.Entry(spinner_frame, textvariable=tran_var, width=10).grid(row=2, column=1, padx=5, pady=2)
 
+    def show_fft():
+        """Display the FFT of the current plot data."""
+
+        nonlocal showing_fft
+
+        if time_data is None or voltage_data is None:
+            messagebox.showinfo("No data", "Run a simulation before performing an FFT.")
+            return
+
+        # Determine data range based on current zoom
+        x_start, x_end = ax.get_xlim()
+        if (
+            orig_xlim[0] is not None
+            and orig_xlim[1] is not None
+            and (x_start != orig_xlim[0] or x_end != orig_xlim[1])
+        ):
+            mask = (time_data >= min(x_start, x_end)) & (time_data <= max(x_start, x_end))
+            t_sel = time_data[mask]
+            v_sel = voltage_data[mask]
+        else:
+            t_sel = time_data
+            v_sel = voltage_data
+
+        if len(t_sel) < 2:
+            messagebox.showinfo("No data", "Not enough points in view for FFT.")
+            return
+
+        # Interpolate to a uniform grid for the FFT calculation
+        uniform_t = np.linspace(t_sel[0], t_sel[-1], len(t_sel))
+        v_interp = np.interp(uniform_t, t_sel, v_sel)
+        dt = uniform_t[1] - uniform_t[0]
+        freq = np.fft.rfftfreq(len(uniform_t), dt)
+        fft_vals = np.fft.rfft(v_interp - np.mean(v_interp))
+        mag = np.abs(fft_vals)
+
+        ax.clear()
+        ax.plot(freq, mag)
+        ax.set_title("FFT Magnitude")
+        ax.set_xlabel("Frequency (Hz)")
+        ax.set_ylabel("Magnitude")
+        ax.grid(True)
+        canvas.draw()
+
+        showing_fft = True
+
+    tk.Button(spinner_frame, text="FFT", command=show_fft).grid(row=2, column=2, padx=5, pady=2)
+
     display_frame = tk.Frame(root)
     display_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -162,6 +210,10 @@ def main():
     # Store original limits for zoom reset
     orig_xlim = [None, None]
     orig_ylim = [None, None]
+
+    time_data = None
+    voltage_data = None
+    showing_fft = False
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
@@ -186,9 +238,34 @@ def main():
         ),
     )
 
+    def plot_time_domain() -> None:
+        """Plot the stored time-domain data."""
+
+        nonlocal showing_fft, orig_xlim, orig_ylim
+
+        if time_data is None or voltage_data is None:
+            return
+
+        ax.clear()
+        ax.plot(time_data, voltage_data)
+        ax.set_title("Output Voltage vs Time")
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Voltage (V)")
+        ax.grid(True)
+        canvas.draw()
+
+        orig_xlim[0], orig_xlim[1] = ax.get_xlim()
+        orig_ylim[0], orig_ylim[1] = ax.get_ylim()
+        showing_fft = False
+
     def reset_zoom(event):
-        """Reset the plot limits on right-click."""
-        if event.button == 3 and orig_xlim[0] is not None:
+        """Reset zoom or exit FFT on right-click."""
+        if event.button != 3:
+            return
+
+        if showing_fft:
+            plot_time_domain()
+        elif orig_xlim[0] is not None:
             ax.set_xlim(orig_xlim)
             ax.set_ylim(orig_ylim)
             canvas.draw()
@@ -312,7 +389,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, showing_fft
 
         if not current_model:
             messagebox.showinfo(
@@ -338,17 +415,10 @@ def main():
             messagebox.showerror("Error", f"Simulation failed: {exc}")
             return
 
-        ax.clear()
-        ax.plot(time_wave, v_cap_wave)
-        ax.set_title("Output Voltage vs Time")
-        ax.set_xlabel("Time (s)")
-        ax.set_ylabel("Voltage (V)")
-        ax.grid(True)
-        canvas.draw()
+        time_data = np.array(time_wave)
+        voltage_data = np.array(v_cap_wave)
 
-        # Remember plot limits for zoom reset
-        orig_xlim[0], orig_xlim[1] = ax.get_xlim()
-        orig_ylim[0], orig_ylim[1] = ax.get_ylim()
+        plot_time_domain()
 
         update_schematic_image()
 
