@@ -7,10 +7,6 @@ import textwrap
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Optional dependency used to create a simple schematic
-import schemdraw
-from schemdraw import elements as elm
-
 
 def _first_subckt_name(lib_path: Path) -> str:
     """Return the name of the first subcircuit defined in a SPICE library."""
@@ -27,86 +23,6 @@ def _first_subckt_name(lib_path: Path) -> str:
         pass
 
     raise ValueError(f"Could not determine subcircuit name from {lib_path}")
-
-
-def create_schematic_svg(netlist_path: str | Path) -> Path:
-    """Render a small schematic reflecting the LTspice netlist topology."""
-
-    netlist_path = Path(netlist_path)
-    svg_path = netlist_path.with_suffix(".svg")
-
-    # ─── start drawing ──────────────────────────
-    d = schemdraw.Drawing(show=False)
-
-    # ── Signal source and reference node (non‑inverting input path) ──
-    gnd = d.add(elm.Ground())
-    src = d.add(elm.SourceV().up().label("V1"))
-    vp = d.here
-
-    # Capacitor C2 from that node to ground
-    d.push()
-    d.add(elm.Capacitor().right().down().label("C2"))
-    d.add(elm.Ground())
-    d.pop()
-
-    # Route the node horizontally towards the op‑amp location
-    d.add(elm.Line().right(1.5))
-    node_plus = d.here
-
-    # ── LM7171 op‑amp – plus input = in2 (lower), minus input = in1 (upper) ──
-    op = d.add(elm.Opamp().at(node_plus).right())
-
-    # Connect non‑inverting (+) input
-    d.add(elm.Line().at(vp).to(op.in2))
-
-    # ── Inverting (–) input network ────────────────────
-    d.add(elm.Line().at(op.in1).left())
-    n_inv = d.here
-
-    # R1 to ground
-    d.push()
-    d.add(elm.Resistor().down().label("R1"))
-    d.add(elm.Ground())
-    d.pop()
-
-    # Lift that node so R9 and C1 can sit above the op‑amp
-    d.add(elm.Line().up(1.5))
-    fb_left = d.here
-
-    # R9 in series, heading right towards Vout
-    r9 = d.add(elm.Resistor().right().label("R9"))
-    fb_right = d.here
-
-    # Down to the op‑amp output
-    d.add(elm.Line().down().to(op.out))
-
-    # C1 in parallel with R9
-    d.push()
-    d.add(elm.Line().at(fb_left).up())
-    d.add(elm.Capacitor().right().label("C1"))
-    d.add(elm.Line().down().to(fb_right))
-    d.pop()
-
-    # ── Output load (R3) and snubber cap (C3) ─────────────
-    d.add(elm.Line().at(op.out).right(1))
-    vout = d.here
-
-    d.add(elm.Resistor().down().label("R3"))
-    d.add(elm.Ground())
-
-    # Small stub to the right before dropping C3
-    d.push()
-    d.add(elm.Line().at(vout).right(1))
-    d.add(elm.Capacitor().down().label("C3"))
-    d.add(elm.Ground())
-    d.pop()
-
-    # ── Finish up ──────────────────────────────
-    d.draw()
-    d.save(str(svg_path))
-    d.save(str(svg_path.with_suffix(".png")))
-    return svg_path
-
 
 def run_simulation(
     lib_path: str | None = None,
