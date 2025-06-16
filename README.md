@@ -56,6 +56,11 @@ The netlist is updated with the spinner values and the simulation result is
 plotted. After each run an image is shown to the right of the plot. For now this
 is simply a large red circle acting as a placeholder for a future schematic.
 
+An **FFT** button next to the `tran` entry computes the Fast Fourier Transform of
+the data currently visible in the plot. When clicked, the FFT magnitude plot
+replaces the time-domain results. Right-clicking inside the FFT plot restores
+the original simulation view.
+
 ```bash
 python gui_runtime.py
 ```
