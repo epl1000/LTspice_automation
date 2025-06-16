@@ -5,6 +5,7 @@ from pathlib import Path
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
+from matplotlib.ticker import FuncFormatter
 from PIL import Image, ImageDraw, ImageTk
 import numpy as np
 
@@ -184,13 +185,26 @@ def main():
         dt = uniform_t[1] - uniform_t[0]
         freq = np.fft.rfftfreq(len(uniform_t), dt)
         fft_vals = np.fft.rfft(v_interp - np.mean(v_interp))
-        mag = np.abs(fft_vals)
+
+        mag_db = 20 * np.log10(np.abs(fft_vals) + np.finfo(float).eps)
+        freq = freq[1:]
+        mag_db = mag_db[1:]
 
         ax.clear()
-        ax.plot(freq, mag)
+        ax.plot(freq, mag_db)
+        ax.set_xscale("log")
         ax.set_title("FFT Magnitude")
         ax.set_xlabel("Frequency (Hz)")
-        ax.set_ylabel("Magnitude")
+        ax.set_ylabel("Magnitude (dB)")
+
+        def fmt_freq(value, _pos):
+            if value >= 1e6:
+                return f"{value/1e6:g}M"
+            if value >= 1e3:
+                return f"{value/1e3:g}k"
+            return f"{value:g}"
+
+        ax.xaxis.set_major_formatter(FuncFormatter(fmt_freq))
         ax.grid(True)
         canvas.draw()
 
