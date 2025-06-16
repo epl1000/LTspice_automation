@@ -34,6 +34,7 @@ def run_simulation(
     c3_value: str | float = "2p",
     v1_amplitude: str | float = 1.0,
     v1_frequency: str | float = 5e5,
+    tran_params: str = "5u",
 ):
     """Run the LTspice simulation using a fixed op-amp test netlist.
 
@@ -60,6 +61,9 @@ def run_simulation(
         Peak value of the input pulse source ``V1`` in volts.
     v1_frequency:
         Frequency of the input pulse source ``V1`` in hertz.
+    tran_params:
+        Argument passed to the ``.tran`` control line. Any valid SPICE
+        transient analysis parameters may be used.
 
     Returns
     -------
@@ -100,7 +104,7 @@ def run_simulation(
         f"C3 Vout 0 {c3_value}",
         include_line,
         "* .ac dec 100 1K 20000K",
-        ".tran 5u",
+        f".tran {tran_params}",
         ".backanno",
         ".end",
     ]
