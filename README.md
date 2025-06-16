@@ -19,7 +19,9 @@ pip install matplotlib
 ## Running the example
 
 The `pyltspicetest1.py` script creates a simple RC circuit netlist, runs LTspice,
-and displays a matplotlib plot of the capacitor voltage over time. Execute it with Python:
+and displays a matplotlib plot of the capacitor voltage over time. It also computes
+an FFT of the capacitor voltage and shows the spectrum on a log-scale frequency axis
+ranging from 1&nbsp;kHz to 200&nbsp;MHz. Execute it with Python:
 
 ```bash
 python pyltspicetest1.py
