@@ -42,6 +42,7 @@ def main():
     c3_var = tk.DoubleVar(value=2e-12)
     v1_amp_var = tk.DoubleVar(value=1.0)
     v1_freq_var = tk.DoubleVar(value=5e5)
+    tran_var = tk.StringVar(value="5u")
 
     tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
@@ -144,6 +145,9 @@ def main():
         textvariable=v1_freq_var,
         width=8,
     ).grid(row=1, column=7, padx=5, pady=2)
+
+    tk.Label(spinner_frame, text="tran").grid(row=2, column=0, padx=5, pady=2, sticky="w")
+    tk.Entry(spinner_frame, textvariable=tran_var, width=10).grid(row=2, column=1, padx=5, pady=2)
 
     display_frame = tk.Frame(root)
     display_frame.pack(fill=tk.BOTH, expand=True)
@@ -289,6 +293,7 @@ def main():
                 c3_var.get(),
                 v1_amp_var.get(),
                 v1_freq_var.get(),
+                tran_var.get(),
             )
         except Exception as exc:
             messagebox.showerror("Error", f"Simulation failed: {exc}")
