@@ -228,13 +228,12 @@ def main():
         canvas.draw()
 
         try:
-            svg_path = pyltspicetest1.create_schematic_svg("opamp_test.net")
-            png_path = svg_path.with_suffix(".png")
-            img = tk.PhotoImage(file=str(png_path))
+            img_path = pyltspicetest1.create_placeholder_image("placeholder.png")
+            img = tk.PhotoImage(file=str(img_path))
             schematic_label.configure(image=img)
             schematic_label.image = img
         except Exception:
-            schematic_label.configure(text="Schematic unavailable")
+            schematic_label.configure(text="Image unavailable")
 
         slew_label_var.set(f"90-10 Slew Rate: {sr_90_10/1e6:.3f} V/us")
         slew80_label_var.set(f"80-20 Slew Rate: {sr_80_20/1e6:.3f} V/us")
