@@ -63,7 +63,9 @@ def generate_schematic_image() -> Image:
     d.add(elm.Capacitor().down().label('C3\n50 pF'))
     d.add(elm.Ground())
 
-    d.draw()                   # show window / inline plot
+    # Draw the schematic without displaying a separate window so the
+    # image can be embedded directly in the GUI.
+    d.draw(show=False)
     # d.save('opamp_test.svg')  # optional export
 
     img_bytes = d.get_imagedata('png')
