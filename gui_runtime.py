@@ -295,7 +295,10 @@ def main():
         v_interp = np.interp(uniform_t, t_sel, v_sel)
         dt = uniform_t[1] - uniform_t[0]
         freq = np.fft.rfftfreq(len(uniform_t), dt)
-        fft_vals = np.fft.rfft(v_interp - np.mean(v_interp))
+        # Apply a Hamming window prior to the FFT for better spectral estimation
+        window = np.hamming(len(uniform_t))
+        v_detrended = v_interp - np.mean(v_interp)
+        fft_vals = np.fft.rfft(v_detrended * window)
 
         mag_db = 20 * np.log10(np.abs(fft_vals) + np.finfo(float).eps)
         freq = freq[1:]
