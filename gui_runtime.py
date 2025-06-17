@@ -6,13 +6,68 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
 from matplotlib.ticker import FuncFormatter
-from PIL import Image, ImageDraw, ImageTk
+from PIL import Image, ImageTk
+import io
+import schemdraw
+import schemdraw.elements as elm
 import numpy as np
 
 import pyltspicetest1
 
 # Spinner constants
 ONE_PF = 1e-12
+
+
+def generate_schematic_image() -> Image:
+    """Return a PIL Image of the op-amp test circuit."""
+
+    d = schemdraw.Drawing(unit=2.2, fontsize=12)
+
+    # --- Op-amp ----------------------------------------------------
+    op = d.add(elm.Opamp(w=3.6, h=2.6, label='LM7171'))
+    noninv, inv, vout = op.in2, op.in1, op.out
+
+    # --- Inverting input path -------------------------------------
+    d.add(elm.Line().at(inv).left().length(1.6))
+    tap1 = d.here
+    d.add(elm.Resistor().label('R1\n1 kΩ'))
+    d.add(elm.Ground())
+
+    d.add(elm.Line().at(tap1).up(2.0))
+    tap2 = d.here
+    d.add(elm.Resistor().right().to(vout).label('R9\n1 kΩ'))
+    d.add(elm.Line().down(2.6))
+    d.add(elm.Line().at(tap2).up(2.0))
+    d.add(elm.Capacitor().right().to(vout).label('C1\n5 pF', loc='bot'))
+    d.add(elm.Line().down(4.6))
+
+
+    # --- Non-inverting input path ---------------------------------
+    d.add(elm.Line().at(noninv).left().length(2.5))
+    d.add(elm.SourceSin().down().label('V1'))
+    d.add(elm.Ground())
+
+    d.add(elm.Line().at(noninv).left().length(0.6))
+    d.add(elm.Capacitor().down().label('C2\n2 pF'))
+    d.add(elm.Ground())
+
+    # --- Output network -------------------------------------------
+    d.add(elm.Line().at(vout).right().length(1.2))
+    tap = d.here                                         # save node
+    d.add(elm.Dot().at(tap).label('Vout', loc='top'))  # <-- label!
+
+    d.add(elm.Resistor().length(2.0).down().label('R3\n1 kΩ'))
+    d.add(elm.Ground())
+
+    d.add(elm.Line().at(tap).right(2.0))
+    d.add(elm.Capacitor().down().label('C3\n50 pF'))
+    d.add(elm.Ground())
+
+    d.draw()                   # show window / inline plot
+    # d.save('opamp_test.svg')  # optional export
+
+    img_bytes = d.get_imagedata('png')
+    return Image.open(io.BytesIO(img_bytes))
 
 
 def main():
@@ -306,8 +361,6 @@ def main():
 
     last_model_file = "last_model.txt"
 
-    default_image_path = ""
-
 
     try:
         with open(last_model_file, "r", encoding="utf-8") as f:
@@ -324,59 +377,21 @@ def main():
 
     update_model_label()
 
-    def update_schematic_image() -> None:
-        """Display the current default image at natural size or a placeholder."""
+    # Display the schemdraw circuit diagram at startup
+    schematic_img = generate_schematic_image()
+    img_width, img_height = schematic_img.size
+    tk_img = ImageTk.PhotoImage(schematic_img)
+    schematic_label.configure(image=tk_img)
+    schematic_label.image = tk_img
 
-        if default_image_path and Path(default_image_path).exists():
-            try:
-                img = Image.open(default_image_path)
-            except Exception:
-                img = None
-        else:
-            img = None
-
-        if img is None:
-            img_size = 200
-            img = Image.new("RGB", (img_size, img_size), "white")
-            draw = ImageDraw.Draw(img)
-            draw.ellipse((10, 10, img_size - 10, img_size - 10), fill="red")
-
-        img_width, img_height = img.size
-
-        tk_img = ImageTk.PhotoImage(img)
-        schematic_label.configure(image=tk_img)
-        schematic_label.image = tk_img
-
-        # Resize the window so the image is shown at its natural size
-        root.update_idletasks()
-        canvas_width = canvas_widget.winfo_width() or int(
-            figure.get_figwidth() * figure.get_dpi()
-        )
-        # Ensure the window never becomes smaller than the initial minimum width
-        new_width = max(canvas_width + img_width + 20, min_width)
-        current_height = root.winfo_height()
-        root.geometry(f"{new_width}x{current_height}")
-
-    def choose_default_image(event=None):
-        """Prompt for an image to use as the default schematic."""
-
-        nonlocal default_image_path
-
-        path = filedialog.askopenfilename(
-            title="Select image",
-            filetypes=[
-                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tif *.tiff"),
-                ("All files", "*.*"),
-            ],
-        )
-        if not path:
-            return
-
-        default_image_path = path
-        update_schematic_image()
-
-    schematic_label.bind("<Button-1>", choose_default_image)
-    update_schematic_image()
+    # Resize the window so the image is shown at its natural size
+    root.update_idletasks()
+    canvas_width = canvas_widget.winfo_width() or int(
+        figure.get_figwidth() * figure.get_dpi()
+    )
+    new_width = max(canvas_width + img_width + 20, min_width)
+    current_height = root.winfo_height()
+    root.geometry(f"{new_width}x{current_height}")
 
     def load_model():
         """Prompt for an op-amp model file and remember the selection."""
@@ -434,8 +449,6 @@ def main():
         voltage_data = np.array(v_cap_wave)
 
         plot_time_domain()
-
-        update_schematic_image()
 
         slew_label_var.set(f"90-10 Slew Rate: {sr_90_10/1e6:.3f} V/us")
         slew80_label_var.set(f"80-20 Slew Rate: {sr_80_20/1e6:.3f} V/us")
