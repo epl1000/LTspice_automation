@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 import io
 import schemdraw
 import schemdraw.elements as elm
+import math
 import numpy as np
 
 import pyltspicetest1
@@ -18,7 +19,40 @@ import pyltspicetest1
 ONE_PF = 1e-12
 
 
-def generate_schematic_image() -> Image:
+def _format_value(value: float, unit: str) -> str:
+    """Return *value* formatted using engineering prefixes."""
+
+    if value == 0:
+        return f"0 {unit}"
+
+    exp = int(math.floor(math.log10(abs(value)) / 3) * 3)
+    exp = max(min(exp, 12), -12)
+    prefixes = {
+        -12: "p",
+        -9: "n",
+        -6: "\u03bc",
+        -3: "m",
+        0: "",
+        3: "k",
+        6: "M",
+        9: "G",
+        12: "T",
+    }
+    scaled = value / (10 ** exp)
+    prefix = prefixes.get(exp, "")
+    return f"{scaled:g} {prefix}{unit}"
+
+
+def generate_schematic_image(
+    r9_value: float,
+    r1_value: float,
+    r3_value: float,
+    c1_value: float,
+    c2_value: float,
+    c3_value: float,
+    v1_amplitude: float,
+    v1_frequency: float,
+) -> Image:
     """Return a PIL Image of the op-amp test circuit."""
 
     d = schemdraw.Drawing(unit=2.2, fontsize=12)
@@ -30,25 +64,39 @@ def generate_schematic_image() -> Image:
     # --- Inverting input path -------------------------------------
     d.add(elm.Line().at(inv).left().length(1.6))
     tap1 = d.here
-    d.add(elm.Resistor().label('R1\n1 kΩ'))
+    d.add(
+        elm.Resistor().label(f"R1\n{_format_value(r1_value, 'Ω')}")
+    )
     d.add(elm.Ground())
 
     d.add(elm.Line().at(tap1).up(2.0))
     tap2 = d.here
-    d.add(elm.Resistor().right().to(vout).label('R9\n1 kΩ'))
+    d.add(
+        elm.Resistor().right().to(vout).label(f"R9\n{_format_value(r9_value, 'Ω')}")
+    )
     d.add(elm.Line().down(2.6))
     d.add(elm.Line().at(tap2).up(2.0))
-    d.add(elm.Capacitor().right().to(vout).label('C1\n5 pF', loc='bot'))
+    d.add(
+        elm.Capacitor().right().to(vout).label(
+            f"C1\n{_format_value(c1_value, 'F')}", loc='bot'
+        )
+    )
     d.add(elm.Line().down(4.6))
 
 
     # --- Non-inverting input path ---------------------------------
     d.add(elm.Line().at(noninv).left().length(2.5))
-    d.add(elm.SourceSin().down().label('V1'))
+    d.add(
+        elm.SourceSin().down().label(
+            f"V1\n{_format_value(v1_amplitude, 'V')}\n{_format_value(v1_frequency, 'Hz')}"
+        )
+    )
     d.add(elm.Ground())
 
     d.add(elm.Line().at(noninv).left().length(0.6))
-    d.add(elm.Capacitor().down().label('C2\n2 pF'))
+    d.add(
+        elm.Capacitor().down().label(f"C2\n{_format_value(c2_value, 'F')}")
+    )
     d.add(elm.Ground())
 
     # --- Output network -------------------------------------------
@@ -56,11 +104,17 @@ def generate_schematic_image() -> Image:
     tap = d.here                                         # save node
     d.add(elm.Dot().at(tap).label('Vout', loc='top'))  # <-- label!
 
-    d.add(elm.Resistor().length(2.0).down().label('R3\n1 kΩ'))
+    d.add(
+        elm.Resistor().length(2.0).down().label(
+            f"R3\n{_format_value(r3_value, 'Ω')}"
+        )
+    )
     d.add(elm.Ground())
 
     d.add(elm.Line().at(tap).right(2.0))
-    d.add(elm.Capacitor().down().label('C3\n50 pF'))
+    d.add(
+        elm.Capacitor().down().label(f"C3\n{_format_value(c3_value, 'F')}")
+    )
     d.add(elm.Ground())
 
     # Draw the schematic without displaying a separate window so the
@@ -379,8 +433,17 @@ def main():
 
     update_model_label()
 
-    # Display the schemdraw circuit diagram at startup
-    schematic_img = generate_schematic_image()
+    # Display the schemdraw circuit diagram at startup using initial values
+    schematic_img = generate_schematic_image(
+        r9_var.get(),
+        r1_var.get(),
+        r3_var.get(),
+        c1_var.get(),
+        c2_var.get(),
+        c3_var.get(),
+        v1_amp_var.get(),
+        v1_freq_var.get(),
+    )
     img_width, img_height = schematic_img.size
     tk_img = ImageTk.PhotoImage(schematic_img)
     schematic_label.configure(image=tk_img)
@@ -429,6 +492,21 @@ def main():
                 "Please load an op-amp model before running the simulation.",
             )
             return
+
+        # Update the schematic diagram with the current spinner values
+        schematic_img = generate_schematic_image(
+            r9_var.get(),
+            r1_var.get(),
+            r3_var.get(),
+            c1_var.get(),
+            c2_var.get(),
+            c3_var.get(),
+            v1_amp_var.get(),
+            v1_freq_var.get(),
+        )
+        tk_img_local = ImageTk.PhotoImage(schematic_img)
+        schematic_label.configure(image=tk_img_local)
+        schematic_label.image = tk_img_local
 
         try:
             time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = pyltspicetest1.run_simulation(
