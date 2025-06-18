@@ -5,15 +5,10 @@ This repository contains a small example using the [PyLTSpice](https://pypi.org/
 ## Prerequisites
 
 - [LTspice](https://www.analog.com/en/design-center/design-tools-and-calculators/ltspice-simulator.html) must be installed and available on your system.
-- Install the Python package `PyLTSpice`:
+- Install the required Python packages using `requirements.txt`:
 
 ```bash
-pip install PyLTSpice
-```
-- Install the Python package `matplotlib` for plotting:
-
-```bash
-pip install matplotlib
+pip install -r requirements.txt
 ```
 
 ## Running the example
