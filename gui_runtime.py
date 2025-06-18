@@ -161,6 +161,8 @@ def main():
     tran_var = tk.StringVar(value="5u")
     ac_var = tk.StringVar(value="dec 100 1K 20000K")
 
+    last_schematic_img = None
+
     tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="C1 (FB)").grid(row=0, column=2, padx=5, pady=2, sticky="w")
@@ -483,6 +485,8 @@ def main():
     schematic_label.configure(image=tk_img)
     schematic_label.image = tk_img
 
+    last_schematic_img = schematic_img
+
     # Resize the window so the image is shown at its natural size
     root.update_idletasks()
     canvas_width = canvas_widget.winfo_width() or int(
@@ -518,7 +522,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img
 
         if not current_model:
             messagebox.showinfo(
@@ -541,6 +545,10 @@ def main():
         tk_img_local = ImageTk.PhotoImage(schematic_img)
         schematic_label.configure(image=tk_img_local)
         schematic_label.image = tk_img_local
+        last_schematic_img = schematic_img
+        last_schematic_img = schematic_img
+        last_schematic_img = schematic_img
+        last_schematic_img = schematic_img
 
         try:
             time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = pyltspicetest1.run_simulation(
@@ -596,6 +604,7 @@ def main():
                 freq_data=freq_data,
                 mag_data=mag_data,
                 measurements=meas,
+                schematic_image=last_schematic_img,
                 append=append_var.get(),
             )
             messagebox.showinfo(
@@ -623,7 +632,7 @@ def main():
     def run_ac():
         """Run an AC simulation and plot the frequency response."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img
 
         if not current_model:
             messagebox.showinfo(
@@ -645,6 +654,7 @@ def main():
         tk_img_local = ImageTk.PhotoImage(schematic_img)
         schematic_label.configure(image=tk_img_local)
         schematic_label.image = tk_img_local
+        last_schematic_img = schematic_img
 
         try:
             freq_wave, mag_db = pyltspicetest1.run_ac_simulation(

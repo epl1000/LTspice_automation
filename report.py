@@ -1,6 +1,7 @@
 from pathlib import Path
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
+from PIL import Image
 
 try:  # Use PyPDF2 when available, fall back to pypdf
     from PyPDF2 import PdfReader, PdfWriter
@@ -20,11 +21,48 @@ def generate_pdf_report(
     freq_data=None,
     mag_data=None,
     measurements=None,
+    schematic_image: Image | None = None,
     append: bool = False,
 ) -> None:
-    """Generate a simple PDF report of the simulation results."""
+    """Generate a simple PDF report of the simulation results.
+
+    Parameters
+    ----------
+    output_file:
+        Destination PDF file.
+    time_data, voltage_data:
+        Data for the time-domain plot.
+    freq_data, mag_data:
+        Data for the AC or FFT plot.
+    measurements:
+        Iterable of strings to display on a separate page or alongside the
+        schematic.
+    schematic_image:
+        ``PIL.Image`` containing the circuit diagram to embed on the first
+        page. When provided, measurement text is shown on top of this image.
+    append:
+        If ``True`` and *output_file* already exists, append new pages instead of
+        overwriting the file.
+    """
 
     figs = []
+
+    if schematic_image is not None:
+        fig, ax = plt.subplots()
+        ax.imshow(schematic_image)
+        ax.axis("off")
+        if measurements:
+            text = "\n".join(measurements)
+            ax.text(
+                0.01,
+                0.95,
+                text,
+                transform=ax.transAxes,
+                va="top",
+                bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            )
+        figs.append(fig)
+        measurements = None
     if time_data is not None and voltage_data is not None:
         fig, ax = plt.subplots()
         ax.plot(time_data, voltage_data)
