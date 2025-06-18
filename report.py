@@ -26,6 +26,7 @@ def generate_pdf_report(
     measurements=None,
     schematic_image: Optional[PilImage] = None,
     append: bool = False,
+    freq_plot_title: str = "FFT Magnitude",
 ) -> None:
     """Generate a simple PDF report of the simulation results.
 
@@ -36,7 +37,8 @@ def generate_pdf_report(
     time_data, voltage_data:
         Data for the time-domain plot.
     freq_data, mag_data:
-        Data for the AC or FFT plot.
+        Data for the frequency-domain plot.  The *freq_plot_title*
+        parameter controls the title shown on this page.
     measurements:
         Iterable of strings to display on a separate page or alongside the
         schematic.
@@ -46,6 +48,9 @@ def generate_pdf_report(
     append:
         If ``True`` and *output_file* already exists, append new pages instead of
         overwriting the file.
+    freq_plot_title:
+        Title to use for the frequency-domain plot when ``freq_data`` and
+        ``mag_data`` are provided.
     """
 
     figs = []
@@ -79,7 +84,7 @@ def generate_pdf_report(
         fig, ax = plt.subplots()
         ax.plot(freq_data, mag_data)
         ax.set_xscale("log")
-        ax.set_title("AC / FFT Magnitude")
+        ax.set_title(freq_plot_title)
         ax.set_xlabel("Frequency (Hz)")
         ax.set_ylabel("Magnitude (dB)")
         ax.grid(True)
