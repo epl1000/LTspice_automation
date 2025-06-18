@@ -60,8 +60,10 @@ Click **Load Model** to select the op-amp model file. The selected file is
 remembered across runs and its name is displayed to the right of the **RUN**
 button. Press **RUN** to run the simulation using the currently loaded model.
 The netlist is updated with the spinner values and the simulation result is
-plotted. After each run an image is shown to the right of the plot. For now this
-is simply a large red circle acting as a placeholder for a future schematic.
+plotted. After each run a schematic diagram reflecting the chosen component
+values is shown to the right of the plot. This same diagram is included on the
+first page of the PDF report together with the measured slew rate and settling
+time.
 
 An **FFT** button next to the `tran` entry computes the Fast Fourier Transform of
 the data currently visible in the plot. When clicked, the FFT magnitude plot
