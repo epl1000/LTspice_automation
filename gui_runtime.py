@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
 from matplotlib.ticker import FuncFormatter
 from PIL import Image, ImageTk
+from PIL.Image import Image as PilImage
 import io
 import schemdraw
 import schemdraw.elements as elm
@@ -54,7 +55,7 @@ def generate_schematic_image(
     c3_value: float,
     v1_amplitude: float,
     v1_frequency: float,
-) -> Image:
+) -> PilImage:
     """Return a PIL Image of the op-amp test circuit."""
 
     d = schemdraw.Drawing(unit=2.2, fontsize=12)

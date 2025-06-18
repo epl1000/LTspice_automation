@@ -1,7 +1,10 @@
 from pathlib import Path
+from typing import Optional
+
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from PIL import Image
+from PIL.Image import Image as PilImage
 
 try:  # Use PyPDF2 when available, fall back to pypdf
     from PyPDF2 import PdfReader, PdfWriter
@@ -21,7 +24,7 @@ def generate_pdf_report(
     freq_data=None,
     mag_data=None,
     measurements=None,
-    schematic_image: Image | None = None,
+    schematic_image: Optional[PilImage] = None,
     append: bool = False,
 ) -> None:
     """Generate a simple PDF report of the simulation results.
