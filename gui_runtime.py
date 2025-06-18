@@ -157,6 +157,7 @@ def main():
     v1_amp_var = tk.DoubleVar(value=1.0)
     v1_freq_var = tk.DoubleVar(value=5e5)
     tran_var = tk.StringVar(value="5u")
+    ac_var = tk.StringVar(value="dec 100 1K 20000K")
 
     tk.Label(spinner_frame, text="R9 (FB)").grid(row=0, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r9_var, width=8).grid(row=0, column=1, padx=5, pady=2)
@@ -262,6 +263,8 @@ def main():
 
     tk.Label(spinner_frame, text="tran").grid(row=2, column=0, padx=5, pady=2, sticky="w")
     tk.Entry(spinner_frame, textvariable=tran_var, width=10).grid(row=2, column=1, padx=5, pady=2)
+    tk.Label(spinner_frame, text="ac").grid(row=2, column=2, padx=5, pady=2, sticky="w")
+    tk.Entry(spinner_frame, textvariable=ac_var, width=15).grid(row=2, column=3, padx=5, pady=2)
 
     def show_fft():
         """Display the FFT of the current plot data."""
@@ -351,7 +354,7 @@ def main():
 
         showing_fft = True
 
-    tk.Button(spinner_frame, text="FFT", command=show_fft).grid(row=2, column=2, padx=5, pady=2)
+    tk.Button(spinner_frame, text="FFT", command=show_fft).grid(row=2, column=4, padx=5, pady=2)
 
     display_frame = tk.Frame(root)
     display_frame.pack(fill=tk.BOTH, expand=True)
@@ -560,6 +563,74 @@ def main():
     )
     run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
+    def run_ac():
+        """Run an AC simulation and plot the frequency response."""
+
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, showing_fft
+
+        if not current_model:
+            messagebox.showinfo(
+                "No model loaded",
+                "Please load an op-amp model before running the simulation.",
+            )
+            return
+
+        schematic_img = generate_schematic_image(
+            r9_var.get(),
+            r1_var.get(),
+            r3_var.get(),
+            c1_var.get(),
+            c2_var.get(),
+            c3_var.get(),
+            v1_amp_var.get(),
+            v1_freq_var.get(),
+        )
+        tk_img_local = ImageTk.PhotoImage(schematic_img)
+        schematic_label.configure(image=tk_img_local)
+        schematic_label.image = tk_img_local
+
+        try:
+            freq_wave, mag_db = pyltspicetest1.run_ac_simulation(
+                current_model,
+                r9_var.get(),
+                r1_var.get(),
+                r3_var.get(),
+                c1_var.get(),
+                c2_var.get(),
+                c3_var.get(),
+                ac_var.get(),
+            )
+        except Exception as exc:
+            messagebox.showerror("Error", f"AC simulation failed: {exc}")
+            return
+
+        ax.clear()
+        ax.plot(np.array(freq_wave), np.array(mag_db))
+        ax.set_xscale("log")
+        ax.set_title("AC Magnitude")
+        ax.set_xlabel("Frequency (Hz)")
+        ax.set_ylabel("Magnitude (dB)")
+        ax.grid(True)
+        canvas.draw()
+
+        time_data = None
+        voltage_data = None
+        orig_xlim[0], orig_xlim[1] = ax.get_xlim()
+        orig_ylim[0], orig_ylim[1] = ax.get_ylim()
+        showing_fft = False
+
+        slew_label_var.set("")
+        slew80_label_var.set("")
+        settling_label_var.set("")
+
+    run_ac_button = tk.Button(
+        run_frame,
+        text="RUN AC",
+        command=run_ac,
+        width=10,
+    )
+    run_ac_button.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+
     tk.Label(run_frame, textvariable=slew_label_var).grid(
         row=0,
         column=2,
@@ -590,10 +661,10 @@ def main():
         command=load_model,
         width=10,
     )
-    load_button.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+    load_button.grid(row=2, column=0, padx=5, pady=2, sticky="w")
 
     tk.Label(run_frame, textvariable=model_label_var).grid(
-        row=1,
+        row=2,
         column=1,
         padx=5,
         pady=2,

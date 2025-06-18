@@ -43,11 +43,11 @@ Run the `gui_runtime.py` script to open a small window with a **RUN** button
 and a **Load Model** button. Eight spin boxes and one text entry allow you to set the values of the
 gain resistor (`R9`), input resistor (`R1`), load resistor (`R3`), feedback
 capacitor (`C1`), input capacitor (`C2`), load capacitor (`C3`), and the
-amplitude and frequency of the input source `V1`. A text field labelled
-`tran` lets you change the parameters of the SPICE `.tran` line. The capacitor spin boxes
+amplitude and frequency of the input source `V1`. Text fields labelled
+`tran` and `ac` let you change the parameters of the SPICE `.tran` and `.ac` lines. The capacitor spin boxes
 increment in 1&nbsp;pF steps. The `C2` and `C3` controls appear to the right of
 the `C1` and `R3` pair, stacked vertically. The new `V1` controls are positioned
-to their right, leaving the **RUN** and **Load Model** buttons on the far right.
+to their right, leaving the **RUN**, **RUN AC** and **Load Model** buttons on the far right.
 
 Click **Load Model** to select the op-amp model file. The selected file is
 remembered across runs and its name is displayed to the right of the **RUN**
