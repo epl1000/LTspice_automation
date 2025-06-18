@@ -160,6 +160,7 @@ def main():
     c3_var = tk.DoubleVar(value=2e-12)
     v1_amp_var = tk.DoubleVar(value=1.0)
     v1_freq_var = tk.DoubleVar(value=5e5)
+    use_sine_var = tk.BooleanVar(value=False)
     tran_var = tk.StringVar(value="5u")
     ac_var = tk.StringVar(value="dec 100 1K 20000K")
 
@@ -273,6 +274,12 @@ def main():
         textvariable=v1_freq_var,
         width=8,
     ).grid(row=1, column=7, padx=5, pady=2)
+
+    tk.Checkbutton(
+        spinner_frame,
+        text="Sine Source",
+        variable=use_sine_var,
+    ).grid(row=2, column=6, columnspan=2, padx=5, pady=2, sticky="w")
 
     tk.Label(spinner_frame, text="tran").grid(row=2, column=0, padx=5, pady=2, sticky="w")
     tk.Entry(spinner_frame, textvariable=tran_var, width=10).grid(row=2, column=1, padx=5, pady=2)
@@ -563,6 +570,7 @@ def main():
                 c3_var.get(),
                 v1_amp_var.get(),
                 v1_freq_var.get(),
+                use_sine_var.get(),
                 tran_var.get(),
             )
         except Exception as exc:

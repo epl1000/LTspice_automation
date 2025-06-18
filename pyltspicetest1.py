@@ -34,6 +34,7 @@ def run_simulation(
     c3_value: str | float = "2p",
     v1_amplitude: str | float = 1.0,
     v1_frequency: str | float = 5e5,
+    use_sine: bool = False,
     tran_params: str = "5u",
 ):
     """Run the LTspice simulation using a fixed op-amp test netlist.
@@ -58,9 +59,11 @@ def run_simulation(
     c3_value:
         Value of the load capacitor ``C3``.
     v1_amplitude:
-        Peak value of the input pulse source ``V1`` in volts.
+        Peak value of the input source ``V1`` in volts.
     v1_frequency:
-        Frequency of the input pulse source ``V1`` in hertz.
+        Frequency of the input source ``V1`` in hertz.
+    use_sine:
+        When ``True`` use a sinusoidal source instead of a pulse.
     tran_params:
         Argument passed to the ``.tran`` control line. Any valid SPICE
         transient analysis parameters may be used.
@@ -89,6 +92,10 @@ def run_simulation(
 
     period = 1 / float(v1_frequency)
     ton = period / 2
+    if use_sine:
+        v1_line = f"V1 N002 0 SIN(0 {v1_amplitude} {v1_frequency})"
+    else:
+        v1_line = f"V1 N002 0 PULSE(0 {v1_amplitude} 0 1n 1n {ton} {period})"
 
     netlist_lines = [
         "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
@@ -97,7 +104,7 @@ def run_simulation(
         f"R9 Vout N001 {r9_value}",
         f"XU2 N002 N001 VCC -VCC Vout {subckt_name}",
         f"R3 Vout 0 {r3_value}",
-        f"V1 N002 0 PULSE(0 {v1_amplitude} 0 1n 1n {ton} {period})",
+        v1_line,
         f"R1 N001 0 {r1_value}",
         f"C1 Vout N001 {c1_value}",
         f"C2 N002 0 {c2_value}",
