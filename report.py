@@ -56,11 +56,11 @@ def generate_pdf_report(
         ax.axis("off")
         if measurements:
             text = "\n".join(measurements)
-            ax.text(
-                0.01,
-                0.95,
+            fig.text(
+                0.02,
+                0.98,
                 text,
-                transform=ax.transAxes,
+                ha="left",
                 va="top",
                 bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
             )
