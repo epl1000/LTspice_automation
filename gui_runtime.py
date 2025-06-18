@@ -623,6 +623,7 @@ def main():
                 measurements=meas,
                 schematic_image=last_schematic_img,
                 append=append_var.get(),
+                freq_plot_title="FFT Magnitude" if showing_fft else "AC Magnitude",
             )
             messagebox.showinfo(
                 "PDF Saved", f"Report written to {current_report_file}"
