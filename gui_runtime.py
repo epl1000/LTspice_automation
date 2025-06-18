@@ -294,11 +294,23 @@ def main():
         uniform_t = np.linspace(t_sel[0], t_sel[-1], len(t_sel))
         v_interp = np.interp(uniform_t, t_sel, v_sel)
         dt = uniform_t[1] - uniform_t[0]
-        freq = np.fft.rfftfreq(len(uniform_t), dt)
-        # Apply a Hamming window prior to the FFT for better spectral estimation
-        window = np.hamming(len(uniform_t))
+
+        # Apply a Hann window (the default in LTspice) prior to the FFT
+        window = np.hanning(len(uniform_t))
         v_detrended = v_interp - np.mean(v_interp)
-        fft_vals = np.fft.rfft(v_detrended * window)
+
+        # Zero pad to the next power-of-two length for consistent bin spacing
+        fft_len = 1 << (len(uniform_t) - 1).bit_length()
+        freq = np.fft.rfftfreq(fft_len, dt)
+        v_windowed = v_detrended * window
+        if fft_len > len(v_windowed):
+            v_windowed = np.pad(v_windowed, (0, fft_len - len(v_windowed)))
+        else:
+            v_windowed = v_windowed[:fft_len]
+
+        fft_vals = np.fft.rfft(v_windowed)
+        # Normalize so a 1 Vrms sine equals 0 dBV
+        fft_vals = (2 / fft_len) * fft_vals / np.sqrt(2)
 
         mag_db = 20 * np.log10(np.abs(fft_vals) + np.finfo(float).eps)
         freq = freq[1:]
