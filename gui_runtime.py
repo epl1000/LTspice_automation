@@ -190,7 +190,7 @@ def main():
             textvariable=c1_var,
             width=8,
         )
-    c1_spinbox.grid(row=0, column=3, padx=5, pady=2)
+    c1_spinbox.grid(row=0, column=3, padx=5, pady=2, sticky="w")
 
     tk.Label(spinner_frame, text="C input").grid(row=0, column=4, padx=5, pady=2, sticky="w")
     try:
@@ -217,7 +217,14 @@ def main():
     tk.Label(spinner_frame, text="R1").grid(row=1, column=0, padx=5, pady=2, sticky="w")
     tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r1_var, width=8).grid(row=1, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="R3 (Load Ω)").grid(row=1, column=2, padx=5, pady=2, sticky="w")
-    tk.Spinbox(spinner_frame, from_=1, to=1e6, increment=100, textvariable=r3_var, width=8).grid(row=1, column=3, padx=5, pady=2)
+    tk.Spinbox(
+        spinner_frame,
+        from_=1,
+        to=1e6,
+        increment=100,
+        textvariable=r3_var,
+        width=8,
+    ).grid(row=1, column=3, padx=5, pady=2, sticky="w")
 
     tk.Label(spinner_frame, text="C load").grid(row=1, column=4, padx=5, pady=2, sticky="w")
     try:
@@ -264,7 +271,9 @@ def main():
     tk.Label(spinner_frame, text="tran").grid(row=2, column=0, padx=5, pady=2, sticky="w")
     tk.Entry(spinner_frame, textvariable=tran_var, width=10).grid(row=2, column=1, padx=5, pady=2)
     tk.Label(spinner_frame, text="ac").grid(row=2, column=2, padx=5, pady=2, sticky="w")
-    tk.Entry(spinner_frame, textvariable=ac_var, width=15).grid(row=2, column=3, padx=5, pady=2)
+    tk.Entry(spinner_frame, textvariable=ac_var, width=15).grid(
+        row=2, column=3, padx=5, pady=2, sticky="w"
+    )
 
     def show_fft():
         """Display the FFT of the current plot data."""
