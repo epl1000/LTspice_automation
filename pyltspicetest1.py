@@ -280,6 +280,80 @@ def run_simulation(
         raise ValueError(f"Trace '{trace_name_capacitor_voltage}' not found")
 
 
+def run_ac_simulation(
+    lib_path: str | None = None,
+    r9_value: str | float = "1k",
+    r1_value: str | float = "1k",
+    r3_value: str | float = "1k",
+    c1_value: str | float = "5p",
+    c2_value: str | float = "2p",
+    c3_value: str | float = "2p",
+    ac_params: str = "dec 100 1K 20000K",
+) -> tuple[list[float], list[float]]:
+    """Run an AC simulation and return frequency and output magnitude."""
+
+    include_path = Path(lib_path) if lib_path is not None else Path("lm7171.lib")
+    include_line = (
+        f'.include "{include_path.as_posix()}"'
+        if include_path.is_absolute()
+        else f".include {include_path.as_posix()}"
+    )
+    try:
+        subckt_name = _first_subckt_name(include_path)
+    except Exception:
+        subckt_name = "LM7171"
+
+    netlist_lines = [
+        "* E:\\LTSpice_Models\\activeBP2 - Copy\\opamptest1.asc",
+        "V4 VCC 0 12",
+        "V5 -VCC 0 -12",
+        f"R9 Vout N001 {r9_value}",
+        f"XU2 N002 N001 VCC -VCC Vout {subckt_name}",
+        f"R3 Vout 0 {r3_value}",
+        "V1 N002 0 AC 1",
+        f"R1 N001 0 {r1_value}",
+        f"C1 Vout N001 {c1_value}",
+        f"C2 N002 0 {c2_value}",
+        f"C3 Vout 0 {c3_value}",
+        include_line,
+        f".ac {ac_params}",
+        ".backanno",
+        ".end",
+    ]
+    netlist_content = "\n".join(netlist_lines)
+
+    netlist_file_name = "opamp_test.net"
+    output_folder = "temp_sim_output"
+
+    with open(netlist_file_name, "w", encoding="utf-8") as f:
+        f.write(textwrap.dedent(netlist_content))
+
+    netlist_editor_obj = SpiceEditor(netlist_file_name)
+    save_fn = getattr(netlist_editor_obj, "save", None)
+    if callable(save_fn):
+        save_fn()
+    else:
+        save_netlist_fn = getattr(netlist_editor_obj, "save_netlist", None)
+        if callable(save_netlist_fn):
+            try:
+                save_netlist_fn()
+            except TypeError:
+                save_netlist_fn(netlist_file_name)
+
+    runner = SimRunner(output_folder=output_folder)
+    raw_file_path, _ = runner.run_now(netlist_editor_obj)
+    if raw_file_path is None:
+        raise RuntimeError("LTspice did not generate a raw output file")
+
+    raw_data = RawRead(str(raw_file_path))
+
+    freq = raw_data.get_trace("frequency").get_wave()
+    vout = raw_data.get_trace("V(vout)").get_wave()
+    mag_db = 20 * np.log10(np.abs(np.array(vout)) + np.finfo(float).eps)
+
+    return (list(freq), list(mag_db))
+
+
 def main():
     """Run the simulation and display a matplotlib plot."""
 
