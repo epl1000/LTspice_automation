@@ -62,6 +62,10 @@ displays frequencies from 1&nbsp;kHz to 200&nbsp;MHz on a logarithmic scale and
 replaces the time-domain results. Right-clicking inside the FFT plot restores
 the original simulation view.
 
+A **Save PDF** button exports the current plots and measurement results to
+`simulation_report.pdf`. Enable **Append to report** to add new pages instead of
+overwriting the existing file.
+
 ```bash
 python gui_runtime.py
 ```

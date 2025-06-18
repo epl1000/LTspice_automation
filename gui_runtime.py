@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 from pathlib import Path
 
+from report import generate_pdf_report
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
@@ -278,7 +280,7 @@ def main():
     def show_fft():
         """Display the FFT of the current plot data."""
 
-        nonlocal showing_fft
+        nonlocal showing_fft, freq_data, mag_data
 
         if time_data is None or voltage_data is None:
             messagebox.showinfo("No data", "Run a simulation before performing an FFT.")
@@ -335,6 +337,9 @@ def main():
         freq = freq[freq_mask]
         mag_db = mag_db[freq_mask]
 
+        freq_data = freq
+        mag_data = mag_db
+
         if len(freq) == 0:
             messagebox.showinfo(
                 "No data",
@@ -380,6 +385,8 @@ def main():
 
     time_data = None
     voltage_data = None
+    freq_data = None
+    mag_data = None
     showing_fft = False
 
     def onselect(eclick, erelease):
@@ -511,7 +518,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, showing_fft
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft
 
         if not current_model:
             messagebox.showinfo(
@@ -554,6 +561,8 @@ def main():
 
         time_data = np.array(time_wave)
         voltage_data = np.array(v_cap_wave)
+        freq_data = None
+        mag_data = None
 
         plot_time_domain()
 
@@ -564,6 +573,37 @@ def main():
     run_frame = tk.Frame(controls)
     run_frame.grid(row=0, column=1, padx=5, pady=0, sticky="w")
 
+    append_var = tk.BooleanVar(value=False)
+
+    def save_pdf() -> None:
+        """Save a PDF report of the current results."""
+
+        meas = [
+            s
+            for s in (
+                slew_label_var.get(),
+                slew80_label_var.get(),
+                settling_label_var.get(),
+            )
+            if s
+        ]
+
+        try:
+            generate_pdf_report(
+                "simulation_report.pdf",
+                time_data=time_data,
+                voltage_data=voltage_data,
+                freq_data=freq_data,
+                mag_data=mag_data,
+                measurements=meas,
+                append=append_var.get(),
+            )
+            messagebox.showinfo(
+                "PDF Saved", "Report written to simulation_report.pdf"
+            )
+        except Exception as exc:
+            messagebox.showerror("Error", f"Failed to generate PDF: {exc}")
+
     run_button = tk.Button(
         run_frame,
         text="RUN",
@@ -572,10 +612,18 @@ def main():
     )
     run_button.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
+    save_button = tk.Button(
+        run_frame,
+        text="Save PDF",
+        command=save_pdf,
+        width=10,
+    )
+    save_button.grid(row=0, column=1, padx=5, pady=0, sticky="w")
+
     def run_ac():
         """Run an AC simulation and plot the frequency response."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, showing_fft
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft
 
         if not current_model:
             messagebox.showinfo(
@@ -624,6 +672,8 @@ def main():
 
         time_data = None
         voltage_data = None
+        freq_data = np.array(freq_wave)
+        mag_data = np.array(mag_db)
         orig_xlim[0], orig_xlim[1] = ax.get_xlim()
         orig_ylim[0], orig_ylim[1] = ax.get_ylim()
         showing_fft = False
@@ -639,6 +689,12 @@ def main():
         width=10,
     )
     run_ac_button.grid(row=1, column=0, padx=5, pady=2, sticky="w")
+
+    tk.Checkbutton(
+        run_frame,
+        text="Append to report",
+        variable=append_var,
+    ).grid(row=1, column=1, padx=5, pady=2, sticky="w")
 
     tk.Label(run_frame, textvariable=slew_label_var).grid(
         row=0,
