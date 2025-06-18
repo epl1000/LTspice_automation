@@ -1,7 +1,16 @@
 from pathlib import Path
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
-from PyPDF2 import PdfReader, PdfWriter
+
+try:  # Use PyPDF2 when available, fall back to pypdf
+    from PyPDF2 import PdfReader, PdfWriter
+except ModuleNotFoundError:  # pragma: no cover - environment may vary
+    try:
+        from pypdf import PdfReader, PdfWriter
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            "PyPDF2 or pypdf is required for PDF report generation"
+        ) from exc
 
 
 def generate_pdf_report(

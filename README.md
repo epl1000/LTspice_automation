@@ -23,6 +23,13 @@ pip install matplotlib
 ```bash
 pip install pillow
 ```
+- Install the Python package `PyPDF2` or `pypdf` to enable PDF report
+  generation:
+
+```bash
+pip install PyPDF2
+```
+
 
 ## Running the example
 
