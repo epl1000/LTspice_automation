@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
 from pathlib import Path
+from datetime import datetime
 
 from report import generate_pdf_report
 
@@ -583,9 +584,12 @@ def main():
     run_frame.grid(row=0, column=1, padx=5, pady=0, sticky="w")
 
     append_var = tk.BooleanVar(value=False)
+    current_report_file: str | None = None
 
     def save_pdf() -> None:
         """Save a PDF report of the current results."""
+
+        nonlocal current_report_file
 
         meas = [
             s
@@ -597,9 +601,13 @@ def main():
             if s
         ]
 
+        if current_report_file is None or not append_var.get():
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            current_report_file = f"simulation_report_{timestamp}.pdf"
+
         try:
             generate_pdf_report(
-                "simulation_report.pdf",
+                current_report_file,
                 time_data=time_data,
                 voltage_data=voltage_data,
                 freq_data=freq_data,
@@ -609,7 +617,7 @@ def main():
                 append=append_var.get(),
             )
             messagebox.showinfo(
-                "PDF Saved", "Report written to simulation_report.pdf"
+                "PDF Saved", f"Report written to {current_report_file}"
             )
         except Exception as exc:
             messagebox.showerror("Error", f"Failed to generate PDF: {exc}")
