@@ -523,6 +523,7 @@ def main():
 
         pan_start = (event.x, event.y, cur_xlim, cur_ylim)
         pan_transform = ax.transData.frozen()
+        rect_selector.set_active(False)
         ax.grid(False)
         grid_disabled = True
         canvas.draw_idle()
@@ -553,6 +554,7 @@ def main():
         if event.button == 1 and pan_start is not None:
             pan_start = None
             pan_transform = None
+            rect_selector.set_active(True)
             if not ctrl_pressed:
                 ax.grid(True)
                 grid_disabled = False
