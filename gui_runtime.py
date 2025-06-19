@@ -506,7 +506,7 @@ def main():
         if event.xdata is None or event.ydata is None:
             return
 
-        pan_start = (event.xdata, event.ydata)
+        pan_start = (event.xdata, event.ydata, cur_xlim, cur_ylim)
 
     def pan_move_event(event):
         """Update the axes limits while panning."""
@@ -516,12 +516,10 @@ def main():
 
         dx = pan_start[0] - event.xdata
         dy = pan_start[1] - event.ydata
-        cur_xlim = ax.get_xlim()
-        cur_ylim = ax.get_ylim()
-        ax.set_xlim(cur_xlim[0] + dx, cur_xlim[1] + dx)
-        ax.set_ylim(cur_ylim[0] + dy, cur_ylim[1] + dy)
+        start_xlim, start_ylim = pan_start[2], pan_start[3]
+        ax.set_xlim(start_xlim[0] + dx, start_xlim[1] + dx)
+        ax.set_ylim(start_ylim[0] + dy, start_ylim[1] + dy)
         canvas.draw()
-        pan_start = (event.xdata, event.ydata)
 
     def pan_end_event(event):
         """End the panning interaction."""
@@ -632,9 +630,6 @@ def main():
         tk_img_local = ImageTk.PhotoImage(schematic_img)
         schematic_label.configure(image=tk_img_local)
         schematic_label.image = tk_img_local
-        last_schematic_img = schematic_img
-        last_schematic_img = schematic_img
-        last_schematic_img = schematic_img
         last_schematic_img = schematic_img
 
         try:
