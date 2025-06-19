@@ -42,10 +42,11 @@ def run_simulation(
     Parameters
     ----------
     lib_path:
-        Optional path to an op-amp ``.lib`` model file. When provided, the
-        ``.include`` statement in the generated netlist will reference this
-        absolute path. Otherwise the short file name ``lm7171.lib`` is used and
-        the model is assumed to define the ``LM7171`` subcircuit.
+        Optional path to an op-amp ``.lib`` or ``.txt`` model file. When
+        provided, the ``.include`` statement in the generated netlist will
+        reference this absolute path. Otherwise the short file name
+        ``lm7171.lib`` is used and the model is assumed to define the
+        ``LM7171`` subcircuit.
     r9_value:
         Value of the gain resistor ``R9``.
     r1_value:
