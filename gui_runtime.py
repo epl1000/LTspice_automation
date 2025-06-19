@@ -396,6 +396,7 @@ def main():
     canvas = FigureCanvasTkAgg(figure, master=display_frame)
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    canvas_widget.focus_set()
 
     # Store original limits for zoom reset
     orig_xlim = [None, None]
@@ -410,6 +411,14 @@ def main():
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
+        if (
+            (eclick.key is not None and "control" in str(eclick.key).lower())
+            or (
+                erelease.key is not None
+                and "control" in str(erelease.key).lower()
+            )
+        ):
+            return
         x1, y1 = eclick.xdata, eclick.ydata
         x2, y2 = erelease.xdata, erelease.ydata
         if None in (x1, y1, x2, y2):
@@ -430,6 +439,23 @@ def main():
             linewidth=1,
         ),
     )
+
+    ctrl_pressed = False
+
+    def key_press_event(event):
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = True
+            rect_selector.set_active(False)
+
+    def key_release_event(event):
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = False
+            rect_selector.set_active(True)
+
+    canvas.mpl_connect("key_press_event", key_press_event)
+    canvas.mpl_connect("key_release_event", key_release_event)
 
     def plot_time_domain() -> None:
         """Plot the stored time-domain data."""
