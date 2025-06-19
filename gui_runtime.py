@@ -436,8 +436,9 @@ def main():
     # center after panning with the CTRL key held down.
     try:
         rect_selector.remove_state("center")
-    except ValueError:
-        # Older Matplotlib versions may not support removing states.
+    except (ValueError, KeyError):
+        # Older Matplotlib versions may not support removing states or
+        # the state might not exist in newer versions.
         pass
 
     ctrl_pressed = False
