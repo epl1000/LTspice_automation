@@ -406,6 +406,7 @@ def main():
     freq_data = None
     mag_data = None
     showing_fft = False
+    pan_start = None
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
@@ -463,6 +464,59 @@ def main():
             canvas.draw()
 
     canvas.mpl_connect("button_press_event", reset_zoom)
+
+    def pan_start_event(event):
+        """Begin panning when CTRL + left mouse button is pressed."""
+        nonlocal pan_start
+        if (
+            event.button != 1
+            or event.key is None
+            or "control" not in str(event.key).lower()
+        ):
+            return
+
+        if orig_xlim[0] is None:
+            return
+
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        if (
+            cur_xlim[0] == orig_xlim[0]
+            and cur_xlim[1] == orig_xlim[1]
+            and cur_ylim[0] == orig_ylim[0]
+            and cur_ylim[1] == orig_ylim[1]
+        ):
+            return
+
+        if event.xdata is None or event.ydata is None:
+            return
+
+        pan_start = (event.xdata, event.ydata)
+
+    def pan_move_event(event):
+        """Update the axes limits while panning."""
+        nonlocal pan_start
+        if pan_start is None or event.xdata is None or event.ydata is None:
+            return
+
+        dx = pan_start[0] - event.xdata
+        dy = pan_start[1] - event.ydata
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        ax.set_xlim(cur_xlim[0] + dx, cur_xlim[1] + dx)
+        ax.set_ylim(cur_ylim[0] + dy, cur_ylim[1] + dy)
+        canvas.draw()
+        pan_start = (event.xdata, event.ydata)
+
+    def pan_end_event(event):
+        """End the panning interaction."""
+        nonlocal pan_start
+        if event.button == 1 and pan_start is not None:
+            pan_start = None
+
+    canvas.mpl_connect("button_press_event", pan_start_event)
+    canvas.mpl_connect("motion_notify_event", pan_move_event)
+    canvas.mpl_connect("button_release_event", pan_end_event)
 
     schematic_label = tk.Label(display_frame)
     schematic_label.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
