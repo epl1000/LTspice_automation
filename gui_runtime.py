@@ -56,13 +56,20 @@ def generate_schematic_image(
     c3_value: float,
     v1_amplitude: float,
     v1_frequency: float,
+    opamp_model: str = "LM7171",
 ) -> PilImage:
-    """Return a PIL Image of the op-amp test circuit."""
+    """Return a PIL Image of the op-amp test circuit.
+
+    Parameters
+    ----------
+    opamp_model:
+        Text to display on the op-amp symbol.
+    """
 
     d = schemdraw.Drawing(unit=2.2, fontsize=12)
 
     # --- Op-amp ----------------------------------------------------
-    op = d.add(elm.Opamp(w=3.6, h=2.6, label='LM7171'))
+    op = d.add(elm.Opamp(w=3.6, h=2.6, label=opamp_model))
     noninv, inv, vout = op.in2, op.in1, op.out
 
     # --- Inverting input path -------------------------------------
@@ -488,6 +495,7 @@ def main():
         c3_var.get(),
         v1_amp_var.get(),
         v1_freq_var.get(),
+        Path(current_model).stem if current_model else "LM7171",
     )
     img_width, img_height = schematic_img.size
     tk_img = ImageTk.PhotoImage(schematic_img)
@@ -550,6 +558,7 @@ def main():
             c3_var.get(),
             v1_amp_var.get(),
             v1_freq_var.get(),
+            Path(current_model).stem,
         )
         tk_img_local = ImageTk.PhotoImage(schematic_img)
         schematic_label.configure(image=tk_img_local)
@@ -668,6 +677,7 @@ def main():
             c3_var.get(),
             v1_amp_var.get(),
             v1_freq_var.get(),
+            Path(current_model).stem,
         )
         tk_img_local = ImageTk.PhotoImage(schematic_img)
         schematic_label.configure(image=tk_img_local)
