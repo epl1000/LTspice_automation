@@ -555,8 +555,8 @@ def main():
         if event.button == 1 and pan_start is not None:
             pan_start = None
             pan_transform = None
-            rect_selector.set_active(True)
             if not ctrl_pressed:
+                rect_selector.set_active(True)
                 ax.grid(True)
                 grid_disabled = False
                 canvas.draw_idle()

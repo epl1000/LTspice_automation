@@ -106,8 +106,8 @@ def test_release_ctrl_mid_pan():
         if event.button == 1 and pan_start is not None:
             pan_start = None
             pan_transform = None
-            rect_selector.set_active(True)
             if not ctrl_pressed:
+                rect_selector.set_active(True)
                 ax.grid(True)
                 grid_disabled = False
                 fig.canvas.draw_idle()
@@ -137,4 +137,69 @@ def test_release_ctrl_mid_pan():
     zoom_ylim = ax.get_ylim()
     assert zoom_xlim == pytest.approx((min(eclick.xdata, erelease.xdata), max(eclick.xdata, erelease.xdata)))
     assert zoom_ylim == pytest.approx((min(eclick.ydata, erelease.ydata), max(eclick.ydata, erelease.ydata)))
+    plt.close(fig)
+
+
+def test_rect_disabled_until_ctrl_released():
+    fig, ax = plt.subplots()
+    ax.plot(np.arange(10))
+    fig.canvas.draw()
+
+    ax.set_xlim(2, 6)
+    ax.set_ylim(0, 6)
+    fig.canvas.draw()
+
+    pan_start = None
+    pan_transform = None
+    ctrl_pressed = False
+
+    def onselect(eclick, erelease):
+        pass
+
+    rect_selector = RectangleSelector(ax, onselect, button=[1], useblit=True)
+    try:
+        rect_selector.remove_state("center")
+    except (ValueError, KeyError):
+        pass
+
+    def on_key_press(event):
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = True
+            rect_selector.set_active(False)
+
+    def on_key_release(event):
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = False
+            if pan_start is None:
+                rect_selector.set_active(True)
+
+    def pan_start_event(event):
+        nonlocal pan_start, pan_transform
+        if event.button != 1 or not ctrl_pressed:
+            return
+        pan_start = (event.x, event.y, ax.get_xlim(), ax.get_ylim())
+        pan_transform = ax.transData.frozen()
+        rect_selector.set_active(False)
+
+    def pan_end_event(event):
+        nonlocal pan_start, pan_transform
+        if event.button == 1 and pan_start is not None:
+            pan_start = None
+            pan_transform = None
+            if not ctrl_pressed:
+                rect_selector.set_active(True)
+
+    start_x, start_y = ax.transData.transform((3, 1))
+    end_x, end_y = ax.transData.transform((4, 1))
+
+    on_key_press(KeyEvent("key_press_event", fig.canvas, key="control"))
+    pan_start_event(MouseEvent("button_press_event", fig.canvas, start_x, start_y, button=1))
+    pan_end_event(MouseEvent("button_release_event", fig.canvas, end_x, end_y, button=1))
+
+    assert rect_selector.active is False
+
+    on_key_release(KeyEvent("key_release_event", fig.canvas, key="control"))
+    assert rect_selector.active is True
     plt.close(fig)
