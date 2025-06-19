@@ -431,6 +431,25 @@ def main():
         ),
     )
 
+    ctrl_pressed = False
+
+    def on_key_press(event) -> None:
+        """Disable zoom rectangle when CTRL is pressed."""
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = True
+            rect_selector.set_active(False)
+
+    def on_key_release(event) -> None:
+        """Re-enable zoom rectangle after CTRL release."""
+        nonlocal ctrl_pressed
+        if event.key is not None and "control" in str(event.key).lower():
+            ctrl_pressed = False
+            rect_selector.set_active(True)
+
+    canvas.mpl_connect("key_press_event", on_key_press)
+    canvas.mpl_connect("key_release_event", on_key_release)
+
     def plot_time_domain() -> None:
         """Plot the stored time-domain data."""
 
@@ -468,11 +487,7 @@ def main():
     def pan_start_event(event):
         """Begin panning when CTRL + left mouse button is pressed."""
         nonlocal pan_start
-        if (
-            event.button != 1
-            or event.key is None
-            or "control" not in str(event.key).lower()
-        ):
+        if event.button != 1 or not ctrl_pressed:
             return
 
         if orig_xlim[0] is None:
