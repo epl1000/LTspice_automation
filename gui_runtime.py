@@ -466,6 +466,52 @@ def main():
     canvas.mpl_connect("key_press_event", on_key_press)
     canvas.mpl_connect("key_release_event", on_key_release)
 
+    # --- Pan with CTRL + left mouse drag when zoomed -------------------
+    pan_start = None
+    start_xlim = (0.0, 0.0)
+    start_ylim = (0.0, 0.0)
+
+    def start_pan(event):
+        """Begin panning when CTRL is held and left button is pressed."""
+        nonlocal pan_start, start_xlim, start_ylim
+        if event.button != 1 or event.key != "control":
+            return
+        if event.xdata is None or event.ydata is None:
+            return
+        if orig_xlim[0] is None:
+            return
+        current_xlim = ax.get_xlim()
+        current_ylim = ax.get_ylim()
+        if current_xlim == tuple(orig_xlim) and current_ylim == tuple(orig_ylim):
+            return
+        rect_selector.set_active(False)
+        pan_start = (event.xdata, event.ydata)
+        start_xlim = current_xlim
+        start_ylim = current_ylim
+
+    def pan_motion(event):
+        """Update axes limits while panning."""
+        if pan_start is None or event.xdata is None or event.ydata is None:
+            return
+        dx = event.xdata - pan_start[0]
+        dy = event.ydata - pan_start[1]
+        ax.set_xlim(start_xlim[0] - dx, start_xlim[1] - dx)
+        ax.set_ylim(start_ylim[0] - dy, start_ylim[1] - dy)
+        canvas.draw_idle()
+
+    def end_pan(event):
+        """Finish panning and reactivate zoom selection."""
+        nonlocal pan_start
+        if event.button != 1:
+            return
+        if pan_start is not None:
+            pan_start = None
+            rect_selector.set_active(True)
+
+    canvas.mpl_connect("button_press_event", start_pan)
+    canvas.mpl_connect("motion_notify_event", pan_motion)
+    canvas.mpl_connect("button_release_event", end_pan)
+
     def plot_time_domain() -> None:
         """Plot the stored time-domain data."""
 

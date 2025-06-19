@@ -84,6 +84,8 @@ python gui_runtime.py
 The plot area supports box zooming.  Left-click and drag to draw a rectangle
 around the region of interest.  Release the mouse button to zoom the axes to
 that range.  Right-click inside the plot to reset to the original view.
+When zoomed in, hold the **CTRL** key and drag with the left mouse button to
+pan the view.
 
 Upon completion, the script generates:
 
