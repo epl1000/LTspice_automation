@@ -56,9 +56,10 @@ increment in 1&nbsp;pF steps. The `C2` and `C3` controls appear to the right of
 the `C1` and `R3` pair, stacked vertically. The new `V1` controls are positioned
 to their right, leaving the **RUN**, **RUN AC** and **Load Model** buttons on the far right.
 
-Click **Load Model** to select the op-amp model file. The selected file is
-remembered across runs and its name is displayed to the right of the **RUN**
-button. Press **RUN** to run the simulation using the currently loaded model.
+Click **Load Model** to select the op-amp model file. The dialog filters for
+both `.lib` and `.txt` files. The selected file is remembered across runs and
+its name is displayed to the right of the **RUN** button. Press **RUN** to run
+the simulation using the currently loaded model.
 The netlist is updated with the spinner values and the simulation result is
 plotted. After each run a schematic diagram reflecting the chosen component
 values is shown to the right of the plot. This same diagram is included on the

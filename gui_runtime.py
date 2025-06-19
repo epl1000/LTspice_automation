@@ -511,7 +511,7 @@ def main():
         nonlocal current_model
         lib_path = filedialog.askopenfilename(
             title="Select op-amp model",
-            filetypes=[("SPICE model", "*.lib"), ("All files", "*.*")],
+            filetypes=[("SPICE model", "*.lib *.txt"), ("All files", "*.*")],
         )
         if not lib_path:
             return
