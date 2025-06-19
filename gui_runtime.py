@@ -407,6 +407,7 @@ def main():
     mag_data = None
     showing_fft = False
     pan_start = None
+    pan_transform = None
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
@@ -491,7 +492,7 @@ def main():
 
     def pan_start_event(event):
         """Begin panning when CTRL + left mouse button is pressed."""
-        nonlocal pan_start, grid_disabled
+        nonlocal pan_start, pan_transform, grid_disabled
         if event.button != 1 or not ctrl_pressed:
             return
 
@@ -508,32 +509,41 @@ def main():
         ):
             return
 
-        if event.xdata is None or event.ydata is None:
+        if event.x is None or event.y is None:
             return
 
-        pan_start = (event.xdata, event.ydata, cur_xlim, cur_ylim)
+        pan_start = (event.x, event.y, cur_xlim, cur_ylim)
+        pan_transform = ax.transData.frozen()
         ax.grid(False)
         grid_disabled = True
         canvas.draw_idle()
 
     def pan_move_event(event):
         """Update the axes limits while panning."""
-        nonlocal pan_start
-        if pan_start is None or event.xdata is None or event.ydata is None:
+        nonlocal pan_start, pan_transform
+        if pan_start is None or event.x is None or event.y is None:
             return
 
-        dx = pan_start[0] - event.xdata
-        dy = pan_start[1] - event.ydata
+        dx_pix = event.x - pan_start[0]
+        dy_pix = event.y - pan_start[1]
         start_xlim, start_ylim = pan_start[2], pan_start[3]
+
+        inv = pan_transform.inverted()
+        start_pt = inv.transform((0, 0))
+        cur_pt = inv.transform((dx_pix, dy_pix))
+        dx = start_pt[0] - cur_pt[0]
+        dy = start_pt[1] - cur_pt[1]
+
         ax.set_xlim(start_xlim[0] + dx, start_xlim[1] + dx)
         ax.set_ylim(start_ylim[0] + dy, start_ylim[1] + dy)
-        canvas.draw()
+        canvas.draw_idle()
 
     def pan_end_event(event):
         """End the panning interaction."""
-        nonlocal pan_start, grid_disabled
+        nonlocal pan_start, pan_transform, grid_disabled
         if event.button == 1 and pan_start is not None:
             pan_start = None
+            pan_transform = None
             if not ctrl_pressed:
                 ax.grid(True)
                 grid_disabled = False
