@@ -432,6 +432,7 @@ def main():
     )
 
     ctrl_pressed = False
+    grid_disabled = False
 
     def on_key_press(event) -> None:
         """Disable zoom rectangle when CTRL is pressed."""
@@ -442,10 +443,14 @@ def main():
 
     def on_key_release(event) -> None:
         """Re-enable zoom rectangle after CTRL release."""
-        nonlocal ctrl_pressed
+        nonlocal ctrl_pressed, grid_disabled
         if event.key is not None and "control" in str(event.key).lower():
             ctrl_pressed = False
             rect_selector.set_active(True)
+            if grid_disabled:
+                ax.grid(True)
+                grid_disabled = False
+                canvas.draw_idle()
 
     canvas.mpl_connect("key_press_event", on_key_press)
     canvas.mpl_connect("key_release_event", on_key_release)
@@ -486,7 +491,7 @@ def main():
 
     def pan_start_event(event):
         """Begin panning when CTRL + left mouse button is pressed."""
-        nonlocal pan_start
+        nonlocal pan_start, grid_disabled
         if event.button != 1 or not ctrl_pressed:
             return
 
@@ -507,6 +512,9 @@ def main():
             return
 
         pan_start = (event.xdata, event.ydata, cur_xlim, cur_ylim)
+        ax.grid(False)
+        grid_disabled = True
+        canvas.draw_idle()
 
     def pan_move_event(event):
         """Update the axes limits while panning."""
@@ -523,9 +531,13 @@ def main():
 
     def pan_end_event(event):
         """End the panning interaction."""
-        nonlocal pan_start
+        nonlocal pan_start, grid_disabled
         if event.button == 1 and pan_start is not None:
             pan_start = None
+            if not ctrl_pressed:
+                ax.grid(True)
+                grid_disabled = False
+                canvas.draw_idle()
 
     canvas.mpl_connect("button_press_event", pan_start_event)
     canvas.mpl_connect("motion_notify_event", pan_move_event)
