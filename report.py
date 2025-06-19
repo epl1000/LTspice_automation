@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
@@ -27,6 +27,10 @@ def generate_pdf_report(
     schematic_image: Optional[PilImage] = None,
     append: bool = False,
     freq_plot_title: str = "FFT Magnitude",
+    time_xlim: Optional[Tuple[float, float]] = None,
+    time_ylim: Optional[Tuple[float, float]] = None,
+    freq_xlim: Optional[Tuple[float, float]] = None,
+    freq_ylim: Optional[Tuple[float, float]] = None,
 ) -> None:
     """Generate a simple PDF report of the simulation results.
 
@@ -51,6 +55,10 @@ def generate_pdf_report(
     freq_plot_title:
         Title to use for the frequency-domain plot when ``freq_data`` and
         ``mag_data`` are provided.
+    time_xlim, time_ylim:
+        Optional axis limits for the time-domain plot.
+    freq_xlim, freq_ylim:
+        Optional axis limits for the frequency-domain plot.
     """
 
     figs = []
@@ -78,6 +86,10 @@ def generate_pdf_report(
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Voltage (V)")
         ax.grid(True)
+        if time_xlim is not None:
+            ax.set_xlim(time_xlim)
+        if time_ylim is not None:
+            ax.set_ylim(time_ylim)
         figs.append(fig)
 
     if freq_data is not None and mag_data is not None:
@@ -88,6 +100,10 @@ def generate_pdf_report(
         ax.set_xlabel("Frequency (Hz)")
         ax.set_ylabel("Magnitude (dB)")
         ax.grid(True)
+        if freq_xlim is not None:
+            ax.set_xlim(freq_xlim)
+        if freq_ylim is not None:
+            ax.set_ylim(freq_ylim)
         figs.append(fig)
 
     if measurements:

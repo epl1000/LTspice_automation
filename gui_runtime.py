@@ -709,6 +709,14 @@ def main():
             current_report_file = f"simulation_report_{timestamp}.pdf"
 
         try:
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+            is_log = ax.get_xscale() == "log"
+            time_xlim = cur_xlim if not is_log and time_data is not None else None
+            time_ylim = cur_ylim if not is_log and time_data is not None else None
+            freq_xlim = cur_xlim if is_log and freq_data is not None else None
+            freq_ylim = cur_ylim if is_log and freq_data is not None else None
+
             generate_pdf_report(
                 current_report_file,
                 time_data=time_data,
@@ -719,6 +727,10 @@ def main():
                 schematic_image=last_schematic_img,
                 append=append_var.get(),
                 freq_plot_title="FFT Magnitude" if showing_fft else "AC Magnitude",
+                time_xlim=time_xlim,
+                time_ylim=time_ylim,
+                freq_xlim=freq_xlim,
+                freq_ylim=freq_ylim,
             )
             messagebox.showinfo(
                 "PDF Saved", f"Report written to {current_report_file}"
