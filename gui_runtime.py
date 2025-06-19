@@ -453,10 +453,11 @@ def main():
 
     def on_key_release(event) -> None:
         """Re-enable zoom rectangle after CTRL release."""
-        nonlocal ctrl_pressed, grid_disabled
+        nonlocal ctrl_pressed, grid_disabled, pan_start
         if event.key is not None and "control" in str(event.key).lower():
             ctrl_pressed = False
-            rect_selector.set_active(True)
+            if pan_start is None:
+                rect_selector.set_active(True)
             if grid_disabled:
                 ax.grid(True)
                 grid_disabled = False
