@@ -431,6 +431,14 @@ def main():
             linewidth=1,
         ),
     )
+    # Disable the built-in "center" mode which is toggled with CTRL. This
+    # prevents the selector from interpreting the first click as the rectangle
+    # center after panning with the CTRL key held down.
+    try:
+        rect_selector.remove_state("center")
+    except ValueError:
+        # Older Matplotlib versions may not support removing states.
+        pass
 
     ctrl_pressed = False
     grid_disabled = False
