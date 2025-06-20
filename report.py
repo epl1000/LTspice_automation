@@ -30,6 +30,8 @@ def generate_pdf_report(
     time_ylim: Optional[Tuple[float, float]] = None,
     freq_xlim: Optional[Tuple[float, float]] = None,
     freq_ylim: Optional[Tuple[float, float]] = None,
+    tran_directive: Optional[str] = None,
+    ac_directive: Optional[str] = None,
 ) -> None:
     """Generate a simple PDF report of the simulation results.
 
@@ -58,6 +60,10 @@ def generate_pdf_report(
         Optional axis limits for the time-domain plot.
     freq_xlim, freq_ylim:
         Optional axis limits for the frequency-domain plot.
+    tran_directive:
+        Full ``.tran`` directive to annotate the time-domain plot.
+    ac_directive:
+        Full ``.ac`` directive to annotate the frequency-domain plot.
     """
 
     figs = []
@@ -81,6 +87,16 @@ def generate_pdf_report(
     if time_data is not None and voltage_data is not None:
         fig, ax = plt.subplots()
         ax.plot(time_data, voltage_data)
+        if tran_directive:
+            ax.text(
+                0.02,
+                0.98,
+                tran_directive,
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
+                bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            )
         ax.set_title("Output Voltage vs Time")
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Voltage (V)")
@@ -94,6 +110,16 @@ def generate_pdf_report(
     if freq_data is not None and mag_data is not None:
         fig, ax = plt.subplots()
         ax.plot(freq_data, mag_data)
+        if ac_directive:
+            ax.text(
+                0.02,
+                0.98,
+                ac_directive,
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
+                bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            )
         ax.set_xscale("log")
         ax.set_title(freq_plot_title)
         ax.set_xlabel("Frequency (Hz)")

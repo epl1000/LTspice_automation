@@ -367,14 +367,26 @@ def main():
 
     lib_path = sys.argv[1] if len(sys.argv) > 1 else None
 
+    tran_params = "5u"
     try:
-        time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = run_simulation(lib_path)
+        time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = run_simulation(
+            lib_path, tran_params=tran_params
+        )
     except Exception:
         sys.exit(1)
 
     # Plot voltage vs time using matplotlib
     plt.figure()
     plt.plot(time_wave, v_cap_wave)
+    plt.text(
+        0.02,
+        0.98,
+        f".tran {tran_params}",
+        transform=plt.gca().transAxes,
+        ha="left",
+        va="top",
+        bbox=dict(facecolor="white", alpha=0.8),
+    )
     plt.title("Output Voltage vs Time")
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (V)")
