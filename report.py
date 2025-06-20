@@ -3,7 +3,6 @@ from typing import Optional, Tuple
 
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
-from PIL import Image
 from PIL.Image import Image as PilImage
 
 try:  # Use PyPDF2 when available, fall back to pypdf
