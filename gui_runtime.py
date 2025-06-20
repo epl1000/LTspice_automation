@@ -692,7 +692,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, tran_directive
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, tran_directive, vpp_marker_max, vpp_marker_min
 
         if not current_model:
             messagebox.showinfo(
@@ -831,7 +831,7 @@ def main():
     def run_ac():
         """Run an AC simulation and plot the frequency response."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, ac_directive
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, ac_directive, vpp_marker_max, vpp_marker_min
 
         if not current_model:
             messagebox.showinfo(
