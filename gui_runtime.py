@@ -408,6 +408,8 @@ def main():
     showing_fft = False
     pan_start = None
     pan_transform = None
+    tran_directive = ""
+    ac_directive = ""
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
@@ -464,13 +466,23 @@ def main():
     def plot_time_domain() -> None:
         """Plot the stored time-domain data."""
 
-        nonlocal showing_fft, orig_xlim, orig_ylim
+        nonlocal showing_fft, orig_xlim, orig_ylim, tran_directive
 
         if time_data is None or voltage_data is None:
             return
 
         ax.clear()
         ax.plot(time_data, voltage_data)
+        if tran_directive:
+            ax.text(
+                0.02,
+                0.98,
+                tran_directive,
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
+                bbox=dict(facecolor="white", alpha=0.8),
+            )
         ax.set_title("Output Voltage vs Time")
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Voltage (V)")
@@ -635,7 +647,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, tran_directive
 
         if not current_model:
             messagebox.showinfo(
@@ -661,6 +673,7 @@ def main():
         schematic_label.image = tk_img_local
         last_schematic_img = schematic_img
 
+        tran_directive = f".tran {tran_var.get()}"
         try:
             time_wave, v_cap_wave, sr_90_10, sr_80_20, settling_time = pyltspicetest1.run_simulation(
                 current_model,
@@ -738,6 +751,8 @@ def main():
                 time_ylim=time_ylim,
                 freq_xlim=freq_xlim,
                 freq_ylim=freq_ylim,
+                tran_directive=tran_directive,
+                ac_directive=ac_directive,
             )
             messagebox.showinfo(
                 "PDF Saved", f"Report written to {current_report_file}"
@@ -764,7 +779,7 @@ def main():
     def run_ac():
         """Run an AC simulation and plot the frequency response."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, ac_directive
 
         if not current_model:
             messagebox.showinfo(
@@ -789,6 +804,7 @@ def main():
         schematic_label.image = tk_img_local
         last_schematic_img = schematic_img
 
+        ac_directive = f".ac {ac_var.get()}"
         try:
             freq_wave, mag_db = pyltspicetest1.run_ac_simulation(
                 current_model,
@@ -811,6 +827,16 @@ def main():
         ax.set_xlabel("Frequency (Hz)")
         ax.set_ylabel("Magnitude (dB)")
         ax.grid(True)
+        if ac_directive:
+            ax.text(
+                0.02,
+                0.98,
+                ac_directive,
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
+                bbox=dict(facecolor="white", alpha=0.8),
+            )
         canvas.draw()
 
         time_data = None
