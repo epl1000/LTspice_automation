@@ -310,6 +310,7 @@ def main():
             vpp_marker_min.remove()
             vpp_marker_min = None
         vpp_var.set("")
+        freq_var.set("")
 
         # Determine data range based on current zoom
         x_start, x_end = ax.get_xlim()
@@ -418,6 +419,7 @@ def main():
     tran_directive = ""
     ac_directive = ""
     vpp_var = tk.StringVar()
+    freq_var = tk.StringVar()
     vpp_marker_max = None
     vpp_marker_min = None
 
@@ -504,6 +506,7 @@ def main():
             vpp_marker_min.remove()
             vpp_marker_min = None
         vpp_var.set("")
+        freq_var.set("")
         canvas.draw()
 
         orig_xlim[0], orig_xlim[1] = ax.get_xlim()
@@ -527,7 +530,7 @@ def main():
     def measure_vpp() -> None:
         """Calculate Vpp in the visible range and mark the extrema."""
 
-        nonlocal vpp_marker_max, vpp_marker_min
+        nonlocal vpp_marker_max, vpp_marker_min, freq_var
 
         if time_data is None or voltage_data is None or showing_fft:
             messagebox.showinfo("No data", "Run a transient simulation first.")
@@ -542,6 +545,13 @@ def main():
             return
 
         vpp_var.set(f"{vpp:g}")
+
+        dt = abs(t_max - t_min)
+        if dt > 0:
+            freq_hz = 1 / (2 * dt)
+            freq_var.set(f"{freq_hz/1e3:.3f} Khz")
+        else:
+            freq_var.set("")
 
         if vpp_marker_max is not None:
             vpp_marker_max.remove()
@@ -692,7 +702,7 @@ def main():
     def run_simulation():
         """Run the simulation using the currently loaded model."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, tran_directive, vpp_marker_max, vpp_marker_min
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, tran_directive, vpp_marker_max, vpp_marker_min, freq_var
 
         if not current_model:
             messagebox.showinfo(
@@ -748,6 +758,7 @@ def main():
             vpp_marker_min.remove()
             vpp_marker_min = None
         vpp_var.set("")
+        freq_var.set("")
 
         plot_time_domain()
 
@@ -831,7 +842,7 @@ def main():
     def run_ac():
         """Run an AC simulation and plot the frequency response."""
 
-        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, ac_directive, vpp_marker_max, vpp_marker_min
+        nonlocal orig_xlim, orig_ylim, time_data, voltage_data, freq_data, mag_data, showing_fft, last_schematic_img, ac_directive, vpp_marker_max, vpp_marker_min, freq_var
 
         if not current_model:
             messagebox.showinfo(
@@ -902,6 +913,7 @@ def main():
             vpp_marker_min.remove()
             vpp_marker_min = None
         vpp_var.set("")
+        freq_var.set("")
         orig_xlim[0], orig_xlim[1] = ax.get_xlim()
         orig_ylim[0], orig_ylim[1] = ax.get_ylim()
         showing_fft = False
@@ -949,9 +961,12 @@ def main():
     )
 
     vpp_button = tk.Button(run_frame, text="VPP", command=measure_vpp, width=5)
-    vpp_button.grid(row=1, column=3, padx=5, pady=2, sticky="w")
+    vpp_button.grid(row=1, column=3, padx=(5, 2), pady=2, sticky="w")
     tk.Entry(run_frame, textvariable=vpp_var, width=10, state="readonly").grid(
-        row=1, column=4, padx=5, pady=2, sticky="w"
+        row=1, column=4, padx=(0, 2), pady=2, sticky="w"
+    )
+    tk.Entry(run_frame, textvariable=freq_var, width=10, state="readonly").grid(
+        row=1, column=5, padx=5, pady=2, sticky="w"
     )
 
     load_button = tk.Button(
