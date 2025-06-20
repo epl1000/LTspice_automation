@@ -18,6 +18,7 @@ import math
 import numpy as np
 
 import pyltspicetest1
+from measurements import compute_vpp
 
 # Spinner constants
 ONE_PF = 1e-12
@@ -45,8 +46,6 @@ def _format_value(value: float, unit: str) -> str:
     scaled = value / (10 ** exp)
     prefix = prefixes.get(exp, "")
     return f"{scaled:g} {prefix}{unit}"
-
-
 def generate_schematic_image(
     r9_value: float,
     r1_value: float,
@@ -298,11 +297,19 @@ def main():
     def show_fft():
         """Display the FFT of the current plot data."""
 
-        nonlocal showing_fft, freq_data, mag_data
+        nonlocal showing_fft, freq_data, mag_data, vpp_marker_max, vpp_marker_min
 
         if time_data is None or voltage_data is None:
             messagebox.showinfo("No data", "Run a simulation before performing an FFT.")
             return
+
+        if vpp_marker_max is not None:
+            vpp_marker_max.remove()
+            vpp_marker_max = None
+        if vpp_marker_min is not None:
+            vpp_marker_min.remove()
+            vpp_marker_min = None
+        vpp_var.set("")
 
         # Determine data range based on current zoom
         x_start, x_end = ax.get_xlim()
@@ -410,6 +417,9 @@ def main():
     pan_transform = None
     tran_directive = ""
     ac_directive = ""
+    vpp_var = tk.StringVar()
+    vpp_marker_max = None
+    vpp_marker_min = None
 
     def onselect(eclick, erelease):
         """Zoom the plot to the rectangle drawn with the left mouse button."""
@@ -466,7 +476,7 @@ def main():
     def plot_time_domain() -> None:
         """Plot the stored time-domain data."""
 
-        nonlocal showing_fft, orig_xlim, orig_ylim, tran_directive
+        nonlocal showing_fft, orig_xlim, orig_ylim, tran_directive, vpp_marker_max, vpp_marker_min
 
         if time_data is None or voltage_data is None:
             return
@@ -487,6 +497,13 @@ def main():
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Voltage (V)")
         ax.grid(True)
+        if vpp_marker_max is not None:
+            vpp_marker_max.remove()
+            vpp_marker_max = None
+        if vpp_marker_min is not None:
+            vpp_marker_min.remove()
+            vpp_marker_min = None
+        vpp_var.set("")
         canvas.draw()
 
         orig_xlim[0], orig_xlim[1] = ax.get_xlim()
@@ -506,6 +523,34 @@ def main():
             canvas.draw()
 
     canvas.mpl_connect("button_press_event", reset_zoom)
+
+    def measure_vpp() -> None:
+        """Calculate Vpp in the visible range and mark the extrema."""
+
+        nonlocal vpp_marker_max, vpp_marker_min
+
+        if time_data is None or voltage_data is None or showing_fft:
+            messagebox.showinfo("No data", "Run a transient simulation first.")
+            return
+
+        try:
+            vpp, t_max, v_max, t_min, v_min = compute_vpp(
+                time_data, ax.get_xlim(), voltage_data
+            )
+        except ValueError:
+            messagebox.showinfo("No data", "No points in current view.")
+            return
+
+        vpp_var.set(f"{vpp:g}")
+
+        if vpp_marker_max is not None:
+            vpp_marker_max.remove()
+        if vpp_marker_min is not None:
+            vpp_marker_min.remove()
+
+        vpp_marker_max = ax.plot(t_max, v_max, "o", color="red", ms=6)[0]
+        vpp_marker_min = ax.plot(t_min, v_min, "o", color="red", ms=6)[0]
+        canvas.draw_idle()
 
     def pan_start_event(event):
         """Begin panning when CTRL + left mouse button is pressed."""
@@ -696,6 +741,13 @@ def main():
         voltage_data = np.array(v_cap_wave)
         freq_data = None
         mag_data = None
+        if vpp_marker_max is not None:
+            vpp_marker_max.remove()
+            vpp_marker_max = None
+        if vpp_marker_min is not None:
+            vpp_marker_min.remove()
+            vpp_marker_min = None
+        vpp_var.set("")
 
         plot_time_domain()
 
@@ -843,6 +895,13 @@ def main():
         voltage_data = None
         freq_data = np.array(freq_wave)
         mag_data = np.array(mag_db)
+        if vpp_marker_max is not None:
+            vpp_marker_max.remove()
+            vpp_marker_max = None
+        if vpp_marker_min is not None:
+            vpp_marker_min.remove()
+            vpp_marker_min = None
+        vpp_var.set("")
         orig_xlim[0], orig_xlim[1] = ax.get_xlim()
         orig_ylim[0], orig_ylim[1] = ax.get_ylim()
         showing_fft = False
@@ -887,6 +946,12 @@ def main():
         padx=5,
         pady=2,
         sticky="w",
+    )
+
+    vpp_button = tk.Button(run_frame, text="VPP", command=measure_vpp, width=5)
+    vpp_button.grid(row=1, column=3, padx=5, pady=2, sticky="w")
+    tk.Entry(run_frame, textvariable=vpp_var, width=10, state="readonly").grid(
+        row=1, column=4, padx=5, pady=2, sticky="w"
     )
 
     load_button = tk.Button(
